@@ -29,11 +29,9 @@ Neste modo você opera em **somente leitura** para o código-fonte. As restriç�
 - **`write` permitido APENAS** para salvar o relatório em `.pi/audit/<arquivo>.md` — nenhum outro path
 - **`mkdir -p .pi/audit`** é o único comando de criação de diretório permitido
 - **Bash — comandos pré-aprovados** (execute sem perguntar):
-  - `uv run ruff check *` / `uv run ruff *`
-  - `uv run pytest *` / `uv run pytest`
-  - `npm run build*` (dentro de `frontend/`)
+  - Qualquer comando de lint/test/build declarado no AGENTS.md
   - `mkdir -p .pi/audit`
-  - `grep *`, `find *`, `ls *`, `ls`, `wc -l *`, `git diff*`, `git status*`, `git log *`, `python3 *`
+  - `grep *`, `find *`, `ls *`, `ls`, `wc -l *`, `git diff*`, `git status*`, `git log *`
 - **Bash — qualquer outro comando**: pergunte ao usuário antes de executar
 - **Acesso à web: PROIBIDO** — não faça fetch de URLs externas
 
@@ -59,22 +57,27 @@ Siga esta ordem para **toda** tarefa de revisão QA:
 
 Se o usuário enviou um trecho de código ou indicou um path específico, foque nele. Caso contrário, pergunte qual módulo ou funcionalidade deve ser analisado.
 
-### Passo 2 — Linters automáticos (executar sempre)
+### Passo 0 — Ler AGENTS.md
+
+O AGENTS.md está injetado no contexto. Identifique:
+- **Linguagem(s)** e stack do projeto
+- **Comandos de lint, test e build** a executar
+- **Estrutura de diretórios** a inspecionar
+
+Se `AGENTS.md` não existir, avise o usuário e sugira executar `/init` antes.
+
+### Passo 2 — Ferramentas automáticas (executar sempre)
+
+Execute os comandos declarados no AGENTS.md:
 
 ```bash
-uv run ruff check .
+# Comando de lint (conforme AGENTS.md)
+# Comando de build (conforme AGENTS.md)
+# Comando de testes (conforme AGENTS.md)
 ```
 
-```bash
-cd frontend && npm run build 2>&1
-```
-
-```bash
-uv run pytest tests/ -v 2>&1
-```
-
-> Se `tests/` não existir, registre "Sem testes automatizados" na seção Testes.
-> Se `frontend/` não existir, registre o erro.
+> Se não houver testes configurados, registre "Sem testes automatizados" na seção Testes.
+> Se algum comando falhar por ausência de dependências, registre o erro e continue.
 
 ### Passo 3 — Leitura e análise do código
 
@@ -110,14 +113,32 @@ Verifique:
 
 #### 3d — Análise de manutenção e boas práticas
 
-Verifique:
-- funções com mais de 40 linhas → risco de manutenção;
-- código duplicado (violação de DRY);
-- nomes de variáveis/funções não descritivos ou ambíguos;
-- ausência de tratamento de erro (`except Exception` sem log ou silenciado);
-- violações de SOLID: responsabilidade única, injeção de dependência, etc.;
-- ausência de type hints em funções públicas Python;
-- uso de APIs depreciadas (ex: Pydantic v1 `.dict()`, `Optional` em vez de `X | None`).
+Verifique usando os limites declarados no AGENTS.md (padrões: função ≤ 40 linhas, arquivo ≤ 300 linhas):
+
+**Python**
+- Funções com mais do que o limite declarado → risco de manutenção
+- `Optional[X]` em vez de `X | None`, `List[X]` em vez de `list[x]` → estilo depreciado
+- `.dict()` Pydantic v1 em vez de `.model_dump()` → API depreciada
+- `except Exception` sem log → erro silenciado
+
+**TypeScript / JavaScript**
+- `any` explícito → perde type safety
+- `fetch` direto em componente (deve usar camada de api/) → acoplamento
+- `useEffect` assíncrono sem cleanup → vazamento de recurso
+
+**Go**
+- Erro ignorado com `_` → falha silenciosa
+- Goroutine sem ctx.Done ou WaitGroup → goroutine leak
+
+**Rust**
+- `unwrap()` em código de produção → panic potencial
+- `unsafe` sem justificativa → risco de UB
+
+**Universal**
+- Código duplicado (viola DRY)
+- Nomes de variáveis/funções não descritivos
+- `except Exception` / captura genérica sem log
+- Ausência de type hints / anotações em funções púcblicas
 
 ### Passo 4 — Produzir o relatório estruturado
 

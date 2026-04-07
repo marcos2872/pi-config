@@ -68,17 +68,19 @@ Não continue para o Passo 2 sem ter clareza sobre o objetivo.
 
 ### Passo 2 — Ler o contexto do projeto
 
-Leia os arquivos fundamentais para entender o estado atual:
+O AGENTS.md está injetado no contexto pela extensão `init-agents`. Leia-o para identificar
+a estrutura de diretórios, linguagem e arquitetura do projeto antes de qualquer pesquisa.
+
+Se `AGENTS.md` não existir, avise o usuário e sugira executar `/init` primeiro.
 
 ```bash
-# Estrutura geral
-find src/ backend/ frontend/src -type f | sort
+# Estrutura geral — use os caminhos declarados no AGENTS.md
+ls -la
+find . -maxdepth 3 -type f -not -path '*/.git/*' -not -path '*/node_modules/*' | sort
 ls .agents/agents/ .agents/skills/ 2>/dev/null
 ```
 
-Leia sempre:
-- `AGENTS.md` — regras de arquitetura, estilo e convenções
-- Arquivos diretamente relevantes ao escopo do plano
+Leia sempre os arquivos diretamente relevantes ao escopo do plano.
 
 ### Passo 3 — Pesquisar o código afetado
 
@@ -202,9 +204,9 @@ Use o template abaixo como conteúdo.
 
 ## Critérios de Conclusão
 
-- [ ] `npm run build` sem erros
-- [ ] `uv run pytest tests/` passa
-- [ ] Endpoint X retorna Y para o caso Z
+- [ ] Comando de build declarado no AGENTS.md sem erros (se aplicável)
+- [ ] Comando de testes declarado no AGENTS.md passa (se aplicável)
+- [ ] <critério específico do plano>
 ```
 
 ---
