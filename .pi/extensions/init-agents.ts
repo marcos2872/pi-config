@@ -497,6 +497,18 @@ function generateAgentsMd(s: ProjectStack): string {
   }
   lines.push(``);
 
+  lines.push(`## Commits`);
+  lines.push(``);
+  lines.push(`Este projeto segue o padrão **Conventional Commits**.`);
+  lines.push(`Antes de commitar, carregue a skill de commit:`);
+  lines.push(``);
+  lines.push(`\`\`\``);
+  lines.push(`/skill:git-commit-push`);
+  lines.push(`\`\`\``);
+  lines.push(``);
+  lines.push(`Ou siga diretamente as regras em \`.agents/skills/git-commit-push/SKILL.md\`.`);
+  lines.push(``);
+
   // Agentes
   lines.push(`## Agentes e Skills`);
   lines.push(``);

@@ -1,44 +1,34 @@
 # AGENTS.md
 
-> Arquivo gerado por `/init` e ajustado manualmente.
+> Arquivo gerado por `/init`. Edite manualmente para ajustar convenções.
 
 ## Projeto
 
 - **Nome:** pi-config
-- **Descrição:** Configuração global do agente pi — extensões, agents e skills reutilizáveis em qualquer projeto.
 
 ## Stack
 
-- **Linguagem(s):** TypeScript (extensões pi via jiti — sem compilação)
-- **Runtime:** Node.js (carregado pelo pi via jiti)
+- **Linguagem(s):** (preencher manualmente)
 
 ## Gerenciamento de Dependências
 
-- **Sem gerenciador:** extensões `.ts` são carregadas diretamente pelo pi sem `npm install`
-- **Dependências de tipos:** disponíveis via `@mariozechner/pi-coding-agent` (instalado globalmente com o pi)
 
 ## Comandos Essenciais
 
-- **Reload de extensões:** `/reload` (dentro do pi)
-- **Testar uma extensão:** `pi -e .pi/extensions/<arquivo>.ts`
 
 ## Estrutura de Diretórios
 
-- **Extensões (projeto-local):** `.pi/extensions/`
-- **Agents:** `.agents/agents/<nome>/SKILL.md`
-- **Skills de suporte:** `.agents/skills/<nome>/SKILL.md`
+- **Código principal:** `src/`
+- **Testes:** `tests/`
 
 ## Arquitetura
 
-- **Estilo:** Configuração declarativa — sem lógica de negócio
-- **Extensões:** intercept events do pi (`before_agent_start`, `tool_call`, `session_start`) e registram comandos/ferramentas
-- **Agents:** arquivos SKILL.md injetados no system prompt pelo `agent-switcher`
-- **Skills:** arquivos SKILL.md carregados sob demanda via `/skill:<nome>`
+- **Estilo:** Flat
 
 ## Testes
 
-- **Framework:** manual — testar extensões dentro do pi com `/reload`
-- **Diretório:** (não aplicável)
+- **Framework:** (preencher manualmente)
+- **Diretório:** `tests/`
 
 ## Convenções de Código
 
@@ -47,8 +37,17 @@
 - **Aninhamento máximo:** 3 níveis
 - **Docstrings / comentários:** Português brasileiro
 - **Identificadores (variáveis, funções, classes):** Inglês
-- **TypeScript:** estrito, sem `any` implícito, sem variáveis não usadas
-- **Extensões:** exportar `default function (pi: ExtensionAPI)` como entry point
+
+## Commits
+
+Este projeto segue o padrão **Conventional Commits**.
+Antes de commitar, carregue a skill de commit:
+
+```
+/skill:git-commit-push
+```
+
+Ou siga diretamente as regras em `.agents/skills/git-commit-push/SKILL.md`.
 
 ## Agentes e Skills
 
