@@ -1,2 +1,3 @@
 # Planos gerados pelo agente plan
 .pi/plans/
+.pi/audit/
