@@ -517,20 +517,8 @@ function generateAgentsMd(s: ProjectStack): string {
 // ─── extensão principal ───────────────────────────────────────────────────────
 
 export default function (pi: ExtensionAPI) {
-  // ── Injetar AGENTS.md no system prompt a cada turno ───────────────────────
-  pi.on("before_agent_start", async (event, ctx) => {
-    const agentsPath = path.join(ctx.cwd, "AGENTS.md");
-    if (!fs.existsSync(agentsPath)) return;
-
-    const content = safeReadText(agentsPath);
-    if (!content.trim()) return;
-
-    return {
-      systemPrompt:
-        event.systemPrompt +
-        `\n\n---\n## Convenções do Projeto (AGENTS.md)\n\n${content}`,
-    };
-  });
+  // Nota: o pi injeta AGENTS.md no contexto nativamente — não é necessário
+  // fazer isso manualmente via before_agent_start.
 
   // ── Comando /init ─────────────────────────────────────────────────────────
   pi.registerCommand("init", {
