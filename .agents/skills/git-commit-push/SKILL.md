@@ -64,29 +64,29 @@ This project follows [Conventional Commits v1.0.0](https://www.conventionalcommi
 
 ### Scope Detection — Path-to-Scope Map
 
-Derive the scope from the **directories** where changes were made:
+Derive the scope from the **directories** where changes were made.
+Use the directory structure declared in the project's **AGENTS.md** as the primary reference.
+
+**Generic heuristics (adapt to the project's actual layout):**
 
 | Changed Path Pattern | Scope |
 |---------------------|-------|
-| `src/domain/**` | `domain` |
-| `src/application/**` | `application` |
-| `src/infrastructure/**` | `infra` |
-| `src/ports/**` | `ports` |
-| `backend/routers/**` | router name (e.g. `templates`, `chat`) |
-| `backend/services/**` | `services` |
-| `backend/auth/**` | `auth` |
-| `backend/models/**` | `models` |
-| `backend/migrations/**` | `migration` |
-| `frontend/src/api/**` | `api` |
-| `frontend/src/components/**` | `ui` |
-| `frontend/src/hooks/**` | `hooks` |
-| `frontend/src/pages/**` | `pages` |
-| `.github/workflows/**` | `ci` |
-| `.agents/**` | `agents` |
-| `docs/**` | `docs` |
+| Domain / business logic layer | `domain` |
+| Application / use-case layer | `application` |
+| Infrastructure / adapters layer | `infra` |
+| HTTP handlers / controllers / routers | module name (e.g. `auth`, `users`, `orders`) |
+| Database models / migrations | `models` or `migration` |
+| Frontend components / UI | `ui` |
+| Frontend pages / routes | `pages` |
+| Frontend API client layer | `api` |
+| Frontend hooks | `hooks` |
+| Tests | `tests` |
+| CI/CD (`.github/workflows/`, `Dockerfile`) | `ci` |
+| Agent configs (`.agents/**`) | `agents` |
+| Documentation (`docs/**`) | `docs` |
 | Changes in multiple unrelated areas | use the dominant one, or **omit scope** |
 
-**Sub-directory refinement:** When changes are concentrated inside a single router or feature (e.g., `backend/routers/templates.py`), use that name as scope: `templates`, `chat`, `auth`, `admin`.
+**Sub-directory refinement:** When changes are concentrated inside a single feature or module, use that feature name as scope (e.g., `auth`, `checkout`, `dashboard`).
 
 ### Summary Line Rules
 
@@ -184,16 +184,16 @@ If changes span 3+ unrelated scopes → omit the scope entirely: `feat: add temp
 
 ### Step 5 — Check for Unrelated Changes (Split Suggestion)
 
-If the diff contains **clearly unrelated logical changes** (e.g., a bug fix in `backend/routers/auth.py` AND a new feature in `frontend/src/components/`):
+If the diff contains **clearly unrelated logical changes** (e.g., a bug fix in an auth module AND a new feature in the UI layer):
 
 1. **Suggest splitting** into separate commits for a cleaner history.
-2. Present a proposed split plan:
+2. Present a proposed split plan based on the actual changed files:
    ```
    Commit 1: fix(auth): handle expired token on refresh
-     - backend/routers/auth.py
+     - <path to auth file>
 
-   Commit 2: feat(ui): add slide preview modal
-     - frontend/src/components/PptxPreviewModal.tsx
+   Commit 2: feat(ui): add new feature component
+     - <path to UI file>
    ```
 3. **Ask the user** whether to split or commit together. If together, summarize the overall intent in a single message.
 
@@ -251,17 +251,16 @@ Display the complete commit message to the user in a clear visual block:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  feat(templates): add slide preview endpoint            │
+│  feat(auth): add token refresh endpoint                 │
 │                                                         │
-│  Enable users to preview individual PPTX slides as PNG  │
-│  images directly from the template detail page.         │
+│  Allow clients to obtain a new access token using a     │
+│  valid refresh token without re-authenticating.         │
 │                                                         │
-│  - Add GET /templates/{name}/slides/{n}/preview route   │
-│  - Implement PPTX→PDF→PNG pipeline via Gotenberg        │
-│  - Cache previews in /tmp by file MD5                   │
-│  - Add PptxPreviewModal component in frontend           │
+│  - Add POST /auth/refresh route                         │
+│  - Rotate refresh token on every use                    │
+│  - Revoke old token after successful rotation           │
 │                                                         │
-│  Refs: #12                                              │
+│  Refs: #42                                              │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -278,7 +277,7 @@ After confirmation:
 
 1. Write the message to a temp file (preserves multi-line formatting reliably):
    ```bash
-cat <<'COMMITMSG' > /tmp/generate-pptx-commit-msg.txt
+cat <<'COMMITMSG' > /tmp/pi-commit-msg.txt
 <type>(<scope>): <summary>
 
 <body>
@@ -289,17 +288,17 @@ COMMITMSG
 
 2. Execute the commit:
    ```bash
-   git commit -F /tmp/generate-pptx-commit-msg.txt
+   git commit -F /tmp/pi-commit-msg.txt
    ```
 
 3. If amend was requested:
    ```bash
-   git commit --amend -F /tmp/generate-pptx-commit-msg.txt
+   git commit --amend -F /tmp/pi-commit-msg.txt
    ```
 
 4. Clean up:
    ```bash
-   rm -f /tmp/generate-pptx-commit-msg.txt
+   rm -f /tmp/pi-commit-msg.txt
    ```
 
 5. Verify success:
@@ -397,13 +396,15 @@ feat(templates): add slide preview endpoint
 
 ## Layers Affected
 
-- [ ] `src/domain`
-- [ ] `src/application`
-- [ ] `src/infrastructure`
-- [ ] `backend`
-- [ ] `frontend`
-- [ ] `migrations`
-- [ ] CI / Agents
+> List the layers/modules changed, based on the project structure declared in AGENTS.md.
+
+- [ ] Domain / business logic
+- [ ] Application / use cases
+- [ ] Infrastructure / adapters
+- [ ] Backend / API handlers
+- [ ] Frontend / UI
+- [ ] Database / migrations
+- [ ] CI / Agents / Config
 
 > Check all that apply (auto-checked based on changed files).
 
@@ -444,7 +445,7 @@ Display the PR details:
 After confirmation, write the PR body to a temp file and execute:
 
 ```bash
-cat <<'PRBODY' > /tmp/generate-pptx-pr-body.md
+cat <<'PRBODY' > /tmp/pi-pr-body.md
 <generated PR body>
 PRBODY
 
@@ -452,12 +453,12 @@ gh pr create \
   --base <base-branch> \
   --head <current-branch> \
   --title "<PR title>" \
-  --body-file /tmp/generate-pptx-pr-body.md \
+  --body-file /tmp/pi-pr-body.md \
   <--draft if requested> \
   <--reviewer user1,user2 if provided> \
   <--label label1,label2 if applicable>
 
-rm -f /tmp/generate-pptx-pr-body.md
+rm -f /tmp/pi-pr-body.md
 ```
 
 **Label mapping from commit type:**
@@ -495,7 +496,7 @@ Committed, pushed, and PR created
   Branch:   feat/slide-preview
   Remote:   origin/feat/slide-preview
   Files:    4 files changed, 187 insertions(+), 12 deletions(-)
-  PR:       #42 — https://github.com/<org>/2026-gerador-pptx-via-agente-copilot/pull/42
+  PR:       #42 — https://github.com/<org>/<repo>/pull/42
   Base:     main <- feat/slide-preview
 ```
 
@@ -540,16 +541,16 @@ If the auto-detected label doesn't exist in the repo, skip it silently. Never fa
 
 ### Multiple Logical Changes
 
-If the diff contains **clearly unrelated logical changes** (e.g., a bug fix in `backend/routers/auth.py` AND a new feature in `frontend/src/components/`):
+If the diff contains **clearly unrelated logical changes** (e.g., a bug fix in the auth module AND a new feature in the UI layer):
 
 1. **Suggest splitting** into separate commits for a cleaner history.
-2. Present a proposed split plan:
+2. Present a proposed split plan based on the actual file paths in the diff:
    ```
    Commit 1: fix(auth): handle expired token on refresh
-     - backend/routers/auth.py
+     - <path to auth file>
 
-   Commit 2: feat(ui): add slide preview modal
-     - frontend/src/components/PptxPreviewModal.tsx
+   Commit 2: feat(ui): add new component
+     - <path to UI file>
    ```
 3. **Ask the user** whether to split or commit together.
 

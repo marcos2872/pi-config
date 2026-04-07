@@ -9,7 +9,7 @@ description: Guide for creating and updating database ER diagrams via Excalidraw
 
 Create or update a database ER diagram when:
 
-- A new SQLModel / ORM model is added
+- A new ORM model or schema class is added
 - A migration adds, removes, or renames columns or tables
 - A foreign key relationship changes
 - A new developer joins and needs to understand the schema
@@ -141,8 +141,8 @@ Use IDs determinísticos para permitir atualização sem duplicatas:
 | Texto do header | `table-<nome>-header` | `table-user-header` |
 | Linha separadora | `table-<nome>-sep` | `table-user-sep` |
 | Texto de coluna | `table-<nome>-col-<campo>` | `table-user-col-email` |
-| Seta FK | `fk-<origem>-<destino>` | `fk-chatsession-user` |
-| Label da seta | `fk-<origem>-<destino>-lbl` | `fk-chatsession-user-lbl` |
+| Seta FK | `fk-<origem>-<destino>` | `fk-pedido-usuario` |
+| Label da seta | `fk-<origem>-<destino>-lbl` | `fk-pedido-usuario-lbl` |
 | Caixa de legenda | `legend` | `legend` |
 | Texto da legenda | `legend-<n>` | `legend-0`, `legend-1` |
 
@@ -154,13 +154,13 @@ Use IDs determinísticos para permitir atualização sem duplicatas:
 docs/diagrams/er-<dominio>.excalidraw
 ```
 
-Suggested domain names for this project:
+Use domain names that reflect the actual tables in the project. Examples:
 
-| Arquivo | Tabelas incluídas |
+| Arquivo | Tabelas sugeridas |
 |---|---|
-| `er-auth.excalidraw` | `user` |
-| `er-chat.excalidraw` | `user`, `chatsession`, `message` |
-| `er-pptx.excalidraw` | `user`, `chatsession`, `pptxfile` |
+| `er-auth.excalidraw` | Entidades de autenticação e usuários |
+| `er-<dominio-a>.excalidraw` | Tabelas do domínio A |
+| `er-<dominio-b>.excalidraw` | Tabelas do domínio B |
 | `er-completo.excalidraw` | Todas as tabelas do projeto |
 
 ---

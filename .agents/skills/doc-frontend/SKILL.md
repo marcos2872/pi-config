@@ -118,7 +118,7 @@ Document all routes in `docs/routes.md` or in the router configuration file.
 
 | Caminho | Destino | Descrição |
 |---|---|---|
-| `/api/*` | `http://localhost:8000/*` | Proxy para o backend FastAPI |
+| `/api/*` | `<URL do backend>` | Proxy para o backend (conforme configuração do projeto) |
 ```
 
 ### React Router Example
@@ -297,10 +297,9 @@ Before closing a frontend task, confirm:
 - [ ] Toda nova chave de estado global está documentada
 - [ ] Props de componentes públicos estão tipadas com TypeScript (sem `any`)
 - [ ] Hooks com efeitos colaterais têm função de cleanup no `useEffect`
-- [ ] Chamadas SSE usam `AbortController` e são canceladas no cleanup
-- [ ] Funções de API ficam em `src/api/` — nenhum `fetch` direto em componentes
+- [ ] Funções de API ficam na camada de API dedicada (conforme estrutura declarada no AGENTS.md) — nenhum `fetch` direto em componentes
 - [ ] Rotas protegidas têm componente de guarda explícito
-- [ ] Textos exibidos ao usuário estão em português brasileiro
+- [ ] Textos exibidos ao usuário estão no idioma configurado no projeto
 
 ---
 

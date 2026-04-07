@@ -154,7 +154,7 @@ Before closing a backend task, confirm:
 - [ ] Toda migration tem docstring explicando contexto e rollback
 - [ ] Mudanças de autenticação/autorização têm diagrama de fluxo atualizado
 - [ ] Breaking changes em endpoints públicos têm ADR
-- [ ] Erros HTTP retornam `detail` em português com código descritivo
+- [ ] Erros HTTP retornam corpo de erro com mensagem descritiva (conforme convenção do framework)
 - [ ] Campos sensíveis (tokens, senhas) nunca aparecem em logs ou respostas
 
 ---
