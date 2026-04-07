@@ -70,6 +70,16 @@ function safeReadText(filePath: string): string {
   }
 }
 
+/**
+ * Substitui uma seção do AGENTS.md pelo novo bloco gerado.
+ * Seções que não existam no arquivo são ignoradas (retorna o conteúdo original).
+ */
+function replaceSection(content: string, heading: string, newBlock: string): string {
+  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`${escaped}[\\s\\S]*?(?=\\n## |$)`);
+  return regex.test(content) ? content.replace(regex, newBlock) : content;
+}
+
 // ─── detecção de stack ────────────────────────────────────────────────────────
 
 function detectProjectStack(cwd: string): ProjectStack {
@@ -385,6 +395,67 @@ function detectProjectStack(cwd: string): ProjectStack {
   return stack;
 }
 
+// ─── geradores de seção (auto-detectadas) ───────────────────────────────────
+
+function genStackSection(s: ProjectStack): string {
+  const lines: string[] = [];
+  lines.push(`## Stack`);
+  lines.push(``);
+  lines.push(`- **Linguagem(s):** ${s.languages.join(", ") || "(preencher manualmente)"}`);
+  if (s.frameworks.length > 0)
+    lines.push(`- **Frameworks:** ${s.frameworks.join(", ")}`);
+  lines.push(``);
+  return lines.join("\n");
+}
+
+function genPackageManagerSection(s: ProjectStack): string {
+  const lines: string[] = [];
+  lines.push(`## Gerenciamento de Dependências`);
+  lines.push(``);
+  if (s.packageManagers.install)
+    lines.push(`- **Instalar tudo:** \`${s.packageManagers.install}\``);
+  if (s.packageManagers.add)
+    lines.push(`- **Adicionar pacote:** \`${s.packageManagers.add}\``);
+  if (s.packageManagers.remove)
+    lines.push(`- **Remover pacote:** \`${s.packageManagers.remove}\``);
+  lines.push(``);
+  return lines.join("\n");
+}
+
+function genCommandsSection(s: ProjectStack): string {
+  const lines: string[] = [];
+  lines.push(`## Comandos Essenciais`);
+  lines.push(``);
+  const cmds: [string, string][] = [
+    ["Build",      s.commands.build],
+    ["Dev server", s.commands.dev],
+    ["Testes",     s.commands.test],
+    ["Cobertura",  s.commands.testCoverage],
+    ["Lint",       s.commands.lint],
+    ["Formato",    s.commands.format],
+    ["Migrações",  s.commands.migrate],
+  ];
+  for (const [label, cmd] of cmds) {
+    if (cmd) lines.push(`- **${label}:** \`${cmd}\``);
+  }
+  lines.push(``);
+  return lines.join("\n");
+}
+
+function genTestsSection(s: ProjectStack): string {
+  const lines: string[] = [];
+  lines.push(`## Testes`);
+  lines.push(``);
+  lines.push(`- **Framework:** ${s.testFramework || "(preencher manualmente)"}`);
+  lines.push(`- **Diretório:** \`${s.dirs.tests}\``);
+  if (s.commands.test)
+    lines.push(`- **Executar todos:** \`${s.commands.test}\``);
+  if (s.commands.testCoverage)
+    lines.push(`- **Com cobertura:** \`${s.commands.testCoverage}\``);
+  lines.push(``);
+  return lines.join("\n");
+}
+
 // ─── geração do AGENTS.md ─────────────────────────────────────────────────────
 
 function generateAgentsMd(s: ProjectStack): string {
@@ -404,43 +475,14 @@ function generateAgentsMd(s: ProjectStack): string {
   if (s.description) lines.push(`- **Descrição:** ${s.description}`);
   lines.push(``);
 
-  // Stack
-  lines.push(`## Stack`);
-  lines.push(``);
-  lines.push(
-    `- **Linguagem(s):** ${s.languages.join(", ") || "(preencher manualmente)"}`
-  );
-  if (s.frameworks.length > 0)
-    lines.push(`- **Frameworks:** ${s.frameworks.join(", ")}`);
-  lines.push(``);
+  // Stack (usa gerador de seção)
+  lines.push(genStackSection(s));
 
-  // Gerenciamento de dependências
-  lines.push(`## Gerenciamento de Dependências`);
-  lines.push(``);
-  if (s.packageManagers.install)
-    lines.push(`- **Instalar tudo:** \`${s.packageManagers.install}\``);
-  if (s.packageManagers.add)
-    lines.push(`- **Adicionar pacote:** \`${s.packageManagers.add}\``);
-  if (s.packageManagers.remove)
-    lines.push(`- **Remover pacote:** \`${s.packageManagers.remove}\``);
-  lines.push(``);
+  // Gerenciamento de dependências (usa gerador de seção)
+  lines.push(genPackageManagerSection(s));
 
-  // Comandos
-  lines.push(`## Comandos Essenciais`);
-  lines.push(``);
-  const cmds: [string, string][] = [
-    ["Build",       s.commands.build],
-    ["Dev server",  s.commands.dev],
-    ["Testes",      s.commands.test],
-    ["Cobertura",   s.commands.testCoverage],
-    ["Lint",        s.commands.lint],
-    ["Formato",     s.commands.format],
-    ["Migrações",   s.commands.migrate],
-  ];
-  for (const [label, cmd] of cmds) {
-    if (cmd) lines.push(`- **${label}:** \`${cmd}\``);
-  }
-  lines.push(``);
+  // Comandos (usa gerador de seção)
+  lines.push(genCommandsSection(s));
 
   // Estrutura de diretórios
   lines.push(`## Estrutura de Diretórios`);
@@ -465,18 +507,8 @@ function generateAgentsMd(s: ProjectStack): string {
   }
   lines.push(``);
 
-  // Testes
-  lines.push(`## Testes`);
-  lines.push(``);
-  lines.push(
-    `- **Framework:** ${s.testFramework || "(preencher manualmente)"}`
-  );
-  lines.push(`- **Diretório:** \`${s.dirs.tests}\``);
-  if (s.commands.test)
-    lines.push(`- **Executar todos:** \`${s.commands.test}\``);
-  if (s.commands.testCoverage)
-    lines.push(`- **Com cobertura:** \`${s.commands.testCoverage}\``);
-  lines.push(``);
+  // Testes (usa gerador de seção)
+  lines.push(genTestsSection(s));
 
   // Convenções
   lines.push(`## Convenções de Código`);
@@ -526,6 +558,26 @@ function generateAgentsMd(s: ProjectStack): string {
   return lines.join("\n");
 }
 
+// ─── atualização inteligente (preserva edições manuais) ──────────────────────
+
+/**
+ * Atualiza apenas as seções auto-detectadas do AGENTS.md existente,
+ * preservando seções editadas manualmente (Projeto, Estrutura de Diretórios,
+ * Arquitetura, Convenções de Código, Commits, Agentes e Skills).
+ */
+function updateAgentsMd(existing: string, s: ProjectStack): string {
+  const autoSections: Array<[string, string]> = [
+    ["## Stack",                        genStackSection(s)],
+    ["## Gerenciamento de Dependências", genPackageManagerSection(s)],
+    ["## Comandos Essenciais",           genCommandsSection(s)],
+    ["## Testes",                        genTestsSection(s)],
+  ];
+  return autoSections.reduce(
+    (content, [heading, newBlock]) => replaceSection(content, heading, newBlock),
+    existing
+  );
+}
+
 // ─── extensão principal ───────────────────────────────────────────────────────
 
 export default function (pi: ExtensionAPI) {
@@ -547,6 +599,13 @@ export default function (pi: ExtensionAPI) {
 
       // Stack não detectada
       if (detected.languages.length === 0) {
+        if (exists) {
+          ctx.ui.notify(
+            "Nenhuma stack detectada. AGENTS.md existente foi mantido sem alterações.",
+            "warning"
+          );
+          return;
+        }
         const ok = await ctx.ui.confirm(
           "Stack não detectada",
           "Nenhum manifesto encontrado (package.json, pyproject.toml, go.mod, Cargo.toml, pom.xml).\n\n" +
@@ -566,6 +625,9 @@ export default function (pi: ExtensionAPI) {
       }
 
       // Preview para confirmação
+      const updateNote = exists
+        ? "\n\nℹ️  Seções detectadas (Stack, Dependências, Comandos, Testes) serão atualizadas.\nSeções editadas manualmente serão preservadas."
+        : "";
       const summary = [
         `Projeto: ${detected.name}`,
         `Linguagem(s): ${detected.languages.join(", ")}`,
@@ -574,7 +636,6 @@ export default function (pi: ExtensionAPI) {
           : "",
         `Testes: ${detected.testFramework || "não detectado"}`,
         `Arquitetura: ${detected.architecture.style}`,
-        exists ? "\n⚠️  AGENTS.md já existe e será substituído." : "",
       ]
         .filter(Boolean)
         .join("\n");
@@ -582,7 +643,7 @@ export default function (pi: ExtensionAPI) {
       const action = exists ? "Atualizar" : "Criar";
       const ok = await ctx.ui.confirm(
         `${action} AGENTS.md`,
-        `${summary}\n\nDeseja ${action.toLowerCase()} o AGENTS.md?`
+        `${summary}${updateNote}\n\nDeseja ${action.toLowerCase()} o AGENTS.md?`
       );
 
       if (!ok) {
@@ -590,7 +651,9 @@ export default function (pi: ExtensionAPI) {
         return;
       }
 
-      const content = generateAgentsMd(detected);
+      const content = exists
+        ? updateAgentsMd(fs.readFileSync(agentsPath, "utf8"), detected)
+        : generateAgentsMd(detected);
       fs.writeFileSync(agentsPath, content, "utf8");
       ctx.ui.notify(
         `✅ AGENTS.md ${exists ? "atualizado" : "criado"} — ${agentsPath}`,
