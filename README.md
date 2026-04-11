@@ -33,7 +33,8 @@ pi-config/
     │   ├── agent-switcher.ts # Troca de agente via Alt+A ou /agent
     │   ├── agents-resolver.ts# Registra os caminhos de agents e skills no pi
     │   ├── init-agents.ts    # Comando /init — gera AGENTS.md para qualquer projeto
-    │   └── openrouter.ts     # Provedor OpenRouter
+    │   ├── openrouter.ts     # Provedor OpenRouter
+    │   └── rtk.ts            # Compressão de tokens via RTK (60-90% de economia)
     └── plans/                # Planos gerados pelo agente plan
 ```
 
@@ -71,6 +72,11 @@ As extensões ficam em `.pi/extensions/` e são carregadas automaticamente pelo 
 - **`agent-switcher.ts`** — troca de agente via **Alt+A** (ciclo) ou `/agent` (seletor visual); controla permissões de ferramentas por modo (somente-leitura, planejamento, auditoria, escrita completa).
 - **`agents-resolver.ts`** — registra os caminhos `.agents/agents/` e `.agents/skills/` para que o pi descubra os agentes e skills automaticamente.
 - **`openrouter.ts`** — integra o provedor [OpenRouter](https://openrouter.ai), permitindo uso de dezenas de modelos via uma única API key.
+- **`rtk.ts`** — integra o [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) para reduzir o consumo de tokens em 60-90%. Intercepta chamadas bash via `rtk rewrite` e substitui os built-ins `grep`, `find` e `ls` por versões comprimidas. O `read` nativo é preservado para manter a qualidade em arquivos grandes. Exibe notificação de instalação quando o binário não está disponível. Comandos disponíveis:
+  - **`/rtk-reload`** — re-verifica se o rtk está instalado e recarrega o pi
+  - **`/rtk-logs`** — exibe a economia de tokens da sessão atual e estatísticas globais
+
+  Pré-requisito: `brew install rtk` ou `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`
 
 ## AGENTS.md — Configuração do projeto
 

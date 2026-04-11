@@ -8,27 +8,38 @@
 
 ## Stack
 
-- **Linguagem(s):** (preencher manualmente)
+- **Linguagem(s):** TypeScript
 
 ## Gerenciamento de Dependências
 
+- Sem `package.json` no projeto raiz — as extensões são carregadas diretamente pelo pi via `jiti` (TypeScript nativo, sem build)
 
 ## Comandos Essenciais
 
+- `/init` — gera ou atualiza o `AGENTS.md` do projeto atual
+- `/agent` — abre o seletor visual de agentes
+- `Alt+A` — cicla entre agentes
+- `/rtk-reload` — re-verifica se o RTK está instalado e recarrega o pi
+- `/rtk-logs` — exibe economia de tokens da sessão atual
 
 ## Estrutura de Diretórios
 
-- **Código principal:** `src/`
-- **Testes:** `tests/`
+- **Extensões:** `.pi/extensions/`
+- **Agentes:** `.agents/agents/`
+- **Skills:** `.agents/skills/`
+- **Planos:** `.pi/plans/`
 
 ## Arquitetura
 
 - **Estilo:** Flat
+- **Extensões pi:** TypeScript carregado via `jiti` (sem compilação); cada arquivo exporta `default function(pi: ExtensionAPI)`
+- **Agentes:** skills Markdown em `.agents/agents/<nome>/SKILL.md`, injetadas no system prompt pelo `agent-switcher`
+- **Skills:** skills Markdown em `.agents/skills/<nome>/SKILL.md`, invocadas via `/skill:<nome>`
 
 ## Testes
 
-- **Framework:** (preencher manualmente)
-- **Diretório:** `tests/`
+- **Framework:** manual/interativo (extensões são runtime-only no processo do pi)
+- **Validação de extensões:** `node -e` para smoke tests de lógica isolada antes de carregar no pi
 
 ## Convenções de Código
 
