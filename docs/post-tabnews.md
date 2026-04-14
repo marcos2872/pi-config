@@ -1,51 +1,54 @@
-# Como reduzi o custo de tokens em 40.9% e gerei diagramas Excalidraw direto do terminal com o pi
+# 40.9% de economia em tokens e diagramas Excalidraw sem sair do terminal — minha configuração do pi
 
-Trabalho com coding agents no terminal há alguns meses. Depois de acumular contas absurdas de API e perder tempo demais alternando entre terminal, editor e ferramenta de diagramação, resolvi parar e montar uma configuração que resolvesse tudo de uma vez.
+Uso o [pi](https://shittycodingagent.ai/) como coding agent de terminal há alguns meses. As contas de API cresceram rápido, e o fluxo de criar diagramas de arquitetura estava completamente fora do terminal. Este post mostra o que montei para atacar os dois problemas — com os números reais depois de 367 comandos.
 
----
-
-## A dor
-
-Quem usa LLMs via API em projetos reais conhece bem esses problemas:
-
-**1. Tokens são caros — e bash é guloso**
-
-Comandos como `grep`, `find` e `ls` em projetos grandes devolvem saídas enormes. O agente processa tudo isso como tokens de entrada. Em uma sessão intensa, são centenas de milhares de tokens gastos só com ruído de terminal.
-
-**2. Troca de contexto constante para diagramas**
-
-Toda vez que precisava visualizar uma arquitetura ou fluxo, o ciclo era: descrever pro agente → copiar JSON → abrir Excalidraw no browser → colar → ajustar. Chato, lento e fora do fluxo de trabalho.
-
-**3. Agentes genéricos demais**
-
-Um agente que faz tudo ao mesmo tempo acaba não sendo especialista em nada. Às vezes você quer só uma resposta rápida sem que o agente saia modificando arquivos. Outras vezes quer modo de escrita completa. Gerenciar isso manualmente é custoso.
+Vale deixar claro: o repositório de configuração é pessoal. Funciona como está, mas adaptar para outro setup exige familiaridade com o sistema de extensões do pi. Não é um pacote pronto para instalar.
 
 ---
 
-## O que eu usei para resolver
+## O problema
 
-Duas ferramentas encaixaram perfeitamente no **[pi](https://shittycodingagent.ai/)**, um coding agent de terminal open source:
+**Bash desperdiça tokens**
 
-- **[RTK (Rust Token Killer)](https://www.rtk-ai.app/)** — comprime a saída de comandos bash antes de mandar pro LLM
-- **Skill de Excalidraw do pi** — gera diagramas `.excalidraw` diretamente na conversa, com renderização em PNG inline
+`grep`, `find` e `ls` em projetos reais devolvem saídas enormes. O agente processa tudo como tokens de entrada. Em uma sessão intensa de análise de código, boa parte dos tokens vai para ruído de terminal — paths longos, output de build que o agente nunca vai usar, linhas repetidas.
+
+**Diagramas quebravam o fluxo**
+
+O ciclo para visualizar uma arquitetura era: pedir pro agente gerar o JSON do Excalidraw → copiar → abrir browser → colar → ajustar. Quatro passos manuais toda vez. Com o tempo, comecei a adiar diagramas porque o custo de criar um era alto demais.
+
+**Agente genérico é agente descuidado**
+
+Revisando código de um colega, não quero que o agente edite nada. Planejando uma refatoração, não quero side effects. Gerenciar isso manualmente — lembrando de instruir o agente antes de cada operação — é fricção que acumula.
 
 ---
 
-## Como foi resolvido
+## O que eu tinha antes
 
-### RTK: interceptação transparente de bash
+Bash puro, sem compressão. Cada `grep -r` em um monorepo Rust chegava a 3.000 linhas de output. O agente lia tudo, eu pagava por tudo.
 
-O pi suporta extensões TypeScript. Criei uma extensão (`rtk.ts`) que faz três coisas:
+Para diagramas, usava o Excalidraw online. Funciona, mas sair do terminal quebra o contexto: você perde a thread da conversa e volta com um arquivo que o agente não gerou nem revisa.
 
-1. **Hook `tool_call`**: antes de qualquer comando bash executar, passa o comando pelo `rtk rewrite`. O RTK substitui chamadas nativas de `grep`, `find` e `ls` pelas versões comprimidas do RTK automaticamente — sem o agente precisar saber disso.
+Para controle de modo de operação, nada estruturado. Ou o agente tinha permissão total, ou eu criava uma sessão nova com instrução diferente.
 
-2. **Override de ferramentas**: registra versões `grep`, `find` e `ls` no pi que já chamam o RTK diretamente, contornando o bash puro quando o agente usa as ferramentas nomeadas.
+---
 
-3. **Snapshot de sessão**: no início de cada sessão, captura as estatísticas globais do RTK. O comando `/rtk-logs` calcula o delta e mostra a economia real daquela sessão.
+## Como resolvi
 
-O `read` nativo do pi é **preservado intencionalmente**. O RTK trunca arquivos de forma opaca — isso prejudicaria a qualidade em leituras de código.
+### RTK: compressão transparente no hook de bash
 
-**Resultado real depois de 367 comandos:**
+O [RTK (Rust Token Killer)](https://www.rtk-ai.app/) comprime a saída de comandos de terminal antes de enviar ao LLM. A integração com o pi é uma extensão TypeScript com um hook `tool_call` que intercepta cada comando bash antes de executar e passa pelo `rtk rewrite`. O RTK reescreve automaticamente chamadas de `grep`, `find` e `ls` para versões comprimidas — sem o agente precisar saber disso.
+
+O `read` nativo do pi fica fora da interceptação intencionalmente. RTK trunca arquivos de forma opaca, o que prejudicaria leituras de código onde o agente precisa do conteúdo completo.
+
+O resultado depois de 367 comandos:
+
+| Métrica | Valor |
+|---|---|
+| Tokens de entrada totais | 141.100 |
+| Tokens salvos | 57.600 |
+| Economia | 40.9% |
+
+Os maiores ganhos individuais: `rtk cargo test` (98.5%), `rtk git commit` (98.2%), `rtk ls` (80.9%). Projetos Rust e Go têm o maior ganho — saídas de compilação e teste são enormes.
 
 **Estatísticas globais acumuladas:**
 
@@ -53,76 +56,51 @@ O `read` nativo do pi é **preservado intencionalmente**. O RTK trunca arquivos 
 
 **Economia da sessão no pi (`/rtk-logs`):**
 
-![RTK Token Savings — sessão do pi](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/images/sess%C3%A3o.png)
+![RTK Token Savings — estatísticas da sessão](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/images/sess%C3%A3o.png)
 
-40.9% de economia em 367 comandos — 57.6K tokens salvos de 141.1K de entrada. `rtk cargo test` chegou a 98.5% de redução. `rtk git commit` economizou 98.2%. `rtk ls` economizou 80.9%.
+Uma ressalva: o RTK comprime saídas de `grep` com heurísticas. Em buscas muito específicas, pode omitir contexto relevante. Não identifiquei falsos negativos no meu uso, mas é um risco real.
 
-O código da extensão completa está no repositório: [`.pi/extensions/rtk.ts`](https://github.com/marcos2872/pi-config/blob/main/.pi/extensions/rtk.ts)
+### Excalidraw: diagramas dentro da sessão
 
-### Skill de Excalidraw: diagramas sem sair do terminal
+O pi tem um sistema de skills — arquivos Markdown que ensinam o agente a executar tarefas especializadas. A skill de Excalidraw define uma filosofia de argumento visual (o diagrama deve comunicar algo mesmo sem os textos), uma biblioteca de padrões para fan-out, convergência, timeline, ciclo e árvore, e um loop obrigatório de render-validate.
 
-O pi tem um sistema de **skills** — arquivos Markdown que ensinam o agente a executar tarefas especializadas. A skill de Excalidraw define toda uma metodologia de criação de diagramas:
+O loop funciona assim: o agente gera o JSON do diagrama, renderiza em PNG via Playwright, lê a imagem e itera até o resultado estar correto — tudo na mesma sessão. O arquivo `.excalidraw` fica na pasta do projeto e o PNG aparece inline na conversa.
 
-- **Filosofia de argumento visual**: o diagrama deve *argumentar*, não apenas exibir. Se remover todos os textos, a estrutura ainda deve comunicar algo.
-- **Biblioteca de padrões**: fan-out, convergência, timeline, ciclo, árvore — cada conceito tem um padrão visual correspondente.
-- **Evidence artifacts**: para diagramas técnicos, inclui snippets de código reais, exemplos de JSON e nomes de eventos reais — não "Input → Process → Output".
-- **Loop render-validate obrigatório**: o agente gera o JSON, renderiza em PNG via Playwright, lê a imagem e itera até o diagrama estar visualmente correto.
-
-A skill usa uma paleta de cores semântica (`color-palette.md`) e duas bibliotecas de ícones para tecnologias comuns (Python, React, Node, TypeScript, SQL, etc.) e templates de layout (steps, flow, system-diagram).
+A dependência do Playwright é uma limitação real. Sem ele instalado, o loop render-validate não funciona e o agente entrega só o JSON sem renderizar.
 
 ![Exemplo de diagrama gerado pela skill Excalidraw](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/examples/excalidraw-demo.png)
 
+### Controle de modo com agent-switcher
+
+Uma extensão define permissões de ferramentas por agente. Alternar com `Alt+A` muda o comportamento instantaneamente — sem reiniciar a sessão, sem nova instrução.
+
+| Agente | Permissões |
+|---|---|
+| `ask` | somente-leitura |
+| `plan` | escreve apenas em `.pi/plans/` |
+| `build` | escrita completa |
+| `qa` | bash + leitura, sem edição de arquivos |
+
 ---
 
-## Como funciona na prática
+## Como usar
 
-### Estrutura do repositório de configuração
+**Instalar as dependências:**
 
-```
-pi-config/
-├── .pi/
-│   └── extensions/
-│       ├── rtk.ts            # Integração RTK (compressão de tokens)
-│       ├── agent-switcher.ts # Troca de agentes via Alt+A ou /agent
-│       ├── agents-resolver.ts
-│       ├── init-agents.ts    # Comando /init para gerar AGENTS.md
-│       └── openrouter.ts     # Suporte a OpenRouter
-└── .agents/
-    ├── agents/               # Agentes especializados
-    │   ├── ask/              # Somente-leitura
-    │   ├── build/            # Escrita completa
-    │   ├── doc/              # Documentação técnica
-    │   ├── plan/             # Planejamento
-    │   ├── qa/               # Análise de bugs
-    │   ├── quality/          # Conformidade e lint
-    │   └── test/             # Testes automatizados
-    └── skills/
-        ├── excalidraw/       # Geração de diagramas
-        ├── diagram/          # Orquestração de diagramas
-        ├── doc-architecture/ # ADRs e C4
-        ├── doc-backend/      # Backend
-        ├── doc-db/           # Diagramas ER
-        ├── doc-frontend/     # Frontend
-        └── git-commit-push/  # Commit convencional + PR
-```
-
-### Como usar
-
-**Pré-requisitos:**
 ```bash
-# Instalar pi
 npm install -g @mariozechner/pi-coding-agent
 
-# Instalar RTK
+# RTK
 brew install rtk
 # ou
 curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
 ```
 
-**Configurar o repositório de config:**
+**Clonar o repositório de configuração:**
+
 ```bash
-git clone https://github.com/seu-usuario/pi-config ~/.pi-config
-# Aponte o pi para o repositório de config nas preferências
+git clone https://github.com/marcos2872/pi-config
+# Configure o pi para apontar para o diretório clonado nas preferências
 ```
 
 **Comandos disponíveis após carregar:**
@@ -130,56 +108,28 @@ git clone https://github.com/seu-usuario/pi-config ~/.pi-config
 | Comando | O que faz |
 |---|---|
 | `/init` | Detecta a stack do projeto e gera `AGENTS.md` automaticamente |
-| `/agent` | Abre seletor visual de agentes |
-| `Alt+A` | Cicla entre agentes |
+| `/agent` | Seletor visual de agentes |
+| `Alt+A` | Cicla entre agentes sem reiniciar a sessão |
 | `/rtk-reload` | Re-verifica instalação do RTK e recarrega |
 | `/rtk-logs` | Exibe economia de tokens da sessão atual |
 
-**Gerar um diagrama Excalidraw:**
+**Gerar um diagrama:**
+
 ```
 > desenha a arquitetura do sistema de autenticação com JWT e refresh token
 ```
-O agente carrega a skill, planeja o diagrama, gera o JSON em seções, renderiza o PNG, lê a imagem e itera até ficar correto — tudo na mesma sessão.
+
+O agente carrega a skill, gera o JSON em seções, renderiza o PNG e itera até ficar correto.
 
 ---
 
-## Formas diferentes de usar
+## O que mudou na prática
 
-### 1. Só o RTK, sem agentes customizados
+Os 40.9% de economia não vêm de um benchmark controlado — são de uso real em projetos mistos de TypeScript, Rust e shell. Projetos com mais compilação têm ganho maior; projetos predominantemente em Python, onde o output de ferramentas é mais enxuto, têm ganho menor.
 
-Se você usa qualquer coding agent com suporte a extensões, pode integrar o RTK apenas no hook de bash. O ganho de tokens começa imediatamente em projetos que fazem muitos `grep` e `find` — Rust e Go são os casos de maior economia (saídas de compilação e teste são enormes).
+A skill de Excalidraw resolveu um problema de atrito. Antes eu adiava diagramas porque criar um custava mais do que valia. Agora o diagrama entra na mesma sessão em que o código está sendo discutido.
 
-### 2. Agentes por modo de operação
-
-O `agent-switcher` controla as permissões de ferramentas por agente:
-
-- **`ask`**: somente-leitura — sem edição de arquivos, ideal para revisões
-- **`plan`**: escreve apenas em `.pi/plans/` — planejamento sem side effects
-- **`build`**: escrita completa — implementação e refatoração
-- **`qa`**: bash + leitura — analisa bugs sem modificar nada
-
-Alternar com `Alt+A` no meio de uma conversa muda o comportamento do agente instantaneamente, sem reiniciar a sessão.
-
-### 3. Skills de documentação encadeadas
-
-A skill `doc` orquestra as demais:
-1. `doc-architecture` → ADRs no formato MADR
-2. `doc-backend` / `doc-frontend` / `doc-db` → tabelas de endpoints, modelos, componentes
-3. `diagram` → carrega `excalidraw` + renderiza PNG
-
-Uma única instrução como *"documenta o módulo de pagamentos"* percorre toda essa cadeia.
-
-### 4. AGENTS.md agnóstico de linguagem
-
-O comando `/init` detecta `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom.xml` e equivalentes. Gera um `AGENTS.md` com a stack, comandos de lint/test/build, estrutura de diretórios e convenções do projeto específico. O pi injeta esse arquivo no contexto — todos os agentes e skills passam a entender o projeto sem instrução adicional.
-
----
-
-## Considerações finais
-
-O RTK resolve um problema que não deveria existir — ferramentas de terminal produzem saídas verbosas por design, mas LLMs cobram por cada token. A compressão transparente no nível da extensão é a camada certa para atacar isso.
-
-A skill de Excalidraw mudou como eu registro decisões de arquitetura. Antes eu adiava a criação de diagramas porque era trabalhoso. Agora faz parte da mesma sessão em que o código é escrito.
+O agent-switcher é a mudança mais silenciosa das três — mas é a que mais mudou o dia a dia. Não penso mais em "preciso lembrar de dizer pro agente não editar nada". Só troco o modo.
 
 - **pi**: [shittycodingagent.ai](https://shittycodingagent.ai/)
 - **RTK**: [rtk-ai.app](https://www.rtk-ai.app/)

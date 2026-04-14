@@ -114,7 +114,7 @@ Edite (ou crie) `~/.pi/agent/settings.json` adicionando os trÃªs campos abaixo â
 {
   "extensions": ["~/pi-config/.pi/extensions"],
   "skills":     ["~/pi-config/.agents/skills"],
-  "prompts":    ["~/pi-config/prompts"]
+  "prompts":    ["~/pi-config/.agents/prompts"]
 }
 ```
 
