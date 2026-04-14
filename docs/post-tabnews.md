@@ -47,9 +47,15 @@ O `read` nativo do pi é **preservado intencionalmente**. O RTK trunca arquivos 
 
 **Resultado real depois de 359 comandos:**
 
-![RTK Token Savings — 38.1% de economia, 43.8K tokens salvos de 115.1K de entrada](images/Screenshot_20260414_173834.png)
+**Estatísticas globais acumuladas:**
 
-38.1% de economia. `rtk cargo test` chegou a 98.5% de redução. `rtk ls` economizou 80.9% em média.
+![RTK Token Savings — estatísticas globais](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/images/global.png)
+
+**Economia da sessão no pi (`/rtk-logs`):**
+
+![RTK Token Savings — sessão do pi](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/images/sess%C3%A3o.png)
+
+39.5% de economia em 385 comandos — 58.7K tokens salvos de 148.8K de entrada. `rtk cargo test` chegou a 98.5% de redução. `rtk git commit` economizou 98.2%. `rtk ls` economizou 82%.
 
 O código da extensão completa está no repositório: [`.pi/extensions/rtk.ts`](https://github.com/marcos2872/pi-config/blob/main/.pi/extensions/rtk.ts)
 
@@ -63,6 +69,8 @@ O pi tem um sistema de **skills** — arquivos Markdown que ensinam o agente a e
 - **Loop render-validate obrigatório**: o agente gera o JSON, renderiza em PNG via Playwright, lê a imagem e itera até o diagrama estar visualmente correto.
 
 A skill usa uma paleta de cores semântica (`color-palette.md`) e duas bibliotecas de ícones para tecnologias comuns (Python, React, Node, TypeScript, SQL, etc.) e templates de layout (steps, flow, system-diagram).
+
+![Exemplo de diagrama gerado pela skill Excalidraw](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/examples/excalidraw-demo.png)
 
 ---
 
