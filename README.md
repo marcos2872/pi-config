@@ -74,7 +74,7 @@ As extensões ficam em `.pi/extensions/` e são carregadas automaticamente pelo 
 - **`agent-switcher.ts`** — troca de agente via **Alt+A** (ciclo) ou `/agent` (seletor visual); controla permissões de ferramentas por modo (somente-leitura, planejamento, auditoria, escrita completa).
 - **`agents-resolver.ts`** — registra os caminhos `.agents/agents/` e `.agents/skills/` para que o pi descubra os agentes e skills automaticamente.
 - **`openrouter.ts`** — integra o provedor [OpenRouter](https://openrouter.ai), permitindo uso de dezenas de modelos via uma única API key.
-- **`rtk.ts`** — integra o [RTK (Rust Token Killer)](https://www.rtk-ai.app/) para reduzir o consumo de tokens em 60-90%. Intercepta chamadas bash via `rtk rewrite` e substitui os built-ins `grep`, `find` e `ls` por versões comprimidas. O `read` nativo é preservado para manter a qualidade em arquivos grandes. Exibe notificação de instalação quando o binário não está disponível. Comandos disponíveis:
+- **`rtk.ts`** — integra o [RTK (Rust Token Killer)](https://www.rtk-ai.app/) para reduzir o consumo de tokens em ~40% na prática (pico de 98% em comandos como `cargo test` e `git commit`). Intercepta chamadas bash via `rtk rewrite` e substitui os built-ins `grep`, `find` e `ls` por versões comprimidas. O `read` nativo é preservado para manter a qualidade em arquivos grandes. Exibe notificação de instalação quando o binário não está disponível. Comandos disponíveis:
   - **`/rtk-reload`** — re-verifica se o rtk está instalado e recarrega o pi
   - **`/rtk-logs`** — exibe a economia de tokens da sessão atual e estatísticas globais
 
@@ -99,3 +99,15 @@ pi --help
 ```
 
 Para carregar este repositório de configuração, configure o caminho nas preferências do pi ou use a variável de ambiente correspondente conforme a documentação.
+
+## Preview
+
+**RTK — economia global de tokens:**
+
+![RTK Token Savings Global](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/images/global.png)
+
+**Excalidraw — diagrama gerado pelo agente:**
+
+![Excalidraw demo](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/examples/excalidraw-demo.png)
+
+> Post completo: [Como reduzi o custo de tokens em 40.9% e gerei diagramas Excalidraw direto do terminal com o pi](docs/post-tabnews.md)

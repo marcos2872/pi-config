@@ -1,4 +1,4 @@
-# Como reduzi o custo de tokens em 38% e gerei diagramas Excalidraw direto do terminal com o pi
+# Como reduzi o custo de tokens em 40.9% e gerei diagramas Excalidraw direto do terminal com o pi
 
 Trabalho com coding agents no terminal há alguns meses. Depois de acumular contas absurdas de API e perder tempo demais alternando entre terminal, editor e ferramenta de diagramação, resolvi parar e montar uma configuração que resolvesse tudo de uma vez.
 
@@ -45,7 +45,7 @@ O pi suporta extensões TypeScript. Criei uma extensão (`rtk.ts`) que faz três
 
 O `read` nativo do pi é **preservado intencionalmente**. O RTK trunca arquivos de forma opaca — isso prejudicaria a qualidade em leituras de código.
 
-**Resultado real depois de 359 comandos:**
+**Resultado real depois de 367 comandos:**
 
 **Estatísticas globais acumuladas:**
 
@@ -55,7 +55,7 @@ O `read` nativo do pi é **preservado intencionalmente**. O RTK trunca arquivos 
 
 ![RTK Token Savings — sessão do pi](https://raw.githubusercontent.com/marcos2872/pi-config/refs/heads/main/docs/images/sess%C3%A3o.png)
 
-39.5% de economia em 385 comandos — 58.7K tokens salvos de 148.8K de entrada. `rtk cargo test` chegou a 98.5% de redução. `rtk git commit` economizou 98.2%. `rtk ls` economizou 82%.
+40.9% de economia em 367 comandos — 57.6K tokens salvos de 141.1K de entrada. `rtk cargo test` chegou a 98.5% de redução. `rtk git commit` economizou 98.2%. `rtk ls` economizou 80.9%.
 
 O código da extensão completa está no repositório: [`.pi/extensions/rtk.ts`](https://github.com/marcos2872/pi-config/blob/main/.pi/extensions/rtk.ts)
 
