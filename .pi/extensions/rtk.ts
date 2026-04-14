@@ -250,7 +250,6 @@ export default function (pi: ExtensionAPI) {
           details: {},
         };
       }
-      }
     },
   });
 
