@@ -90,15 +90,65 @@ Cada projeto que usar estes agentes deve ter um `AGENTS.md` na raiz com a stack,
 
 O `/init` detecta `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom.xml` e equivalentes, preenche o `AGENTS.md` e pede confirmação antes de escrever. O arquivo pode ser editado manualmente a qualquer momento.
 
-## Como usar
+## Instalação global
 
-Consulte a [documentação oficial do pi](https://shittycodingagent.ai/) para instruções de instalação e configuração:
+Este repositório foi desenhado para funcionar como configuração global do pi — disponível em todos os projetos sem nenhuma configuração por repositório.
+
+### 1. Instalar o pi
 
 ```bash
-pi --help
+npm install -g @mariozechner/pi-coding-agent
 ```
 
-Para carregar este repositório de configuração, configure o caminho nas preferências do pi ou use a variável de ambiente correspondente conforme a documentação.
+### 2. Clonar este repositório
+
+```bash
+git clone https://github.com/marcos2872/pi-config ~/pi-config
+```
+
+### 3. Configurar o settings.json global
+
+Edite (ou crie) `~/.pi/agent/settings.json` adicionando os três campos abaixo — ajuste o caminho se clonou em outro diretório:
+
+```json
+{
+  "extensions": ["~/pi-config/.pi/extensions"],
+  "skills":     ["~/pi-config/.agents/skills"],
+  "prompts":    ["~/pi-config/prompts"]
+}
+```
+
+As demais configurações existentes (provider, model, theme…) são preservadas — apenas adicione as três linhas.
+
+### 4. Instalar o RTK (opcional, recomendado)
+
+```bash
+# macOS
+brew install rtk
+
+# Linux
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
+```
+
+### 5. Recarregar as extensões
+
+Abra o pi em qualquer projeto e execute:
+
+```
+/reload
+```
+
+As extensões, skills e prompts deste repositório estarão disponíveis globalmente. Os agentes (`/agent`, `Alt+A`) carregam os arquivos de `~/.pi/agent/settings.json` e fazem fallback para os agentes globais quando o projeto não tem `.agents/agents/` próprio.
+
+### Como usar em um projeto
+
+Com o pi aberto no diretório do projeto:
+
+```
+/init
+```
+
+O comando detecta a stack automaticamente e gera o `AGENTS.md` na raiz do projeto. A partir daí todos os agentes e skills conhecem a estrutura, comandos e convenções do projeto sem instrução adicional.
 
 ## Preview
 
