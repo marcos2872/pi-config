@@ -42,6 +42,7 @@ All elements share these:
 | `textAlign` | "left", "center", "right" |
 | `verticalAlign` | "top", "middle", "bottom" |
 | `containerId` | ID of parent shape |
+| `lineHeight` | number | Line height multiplier for multi-line text (default: 1.25) |
 
 ## Arrow-Specific Properties
 

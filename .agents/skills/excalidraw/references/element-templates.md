@@ -180,3 +180,31 @@ Copy-paste JSON templates for each Excalidraw element type. The `strokeColor` an
 ```
 
 For curves: use 3+ points in `points` array.
+
+## Diamond (decision / conditional)
+```json
+{
+  "type": "diamond",
+  "id": "decision1",
+  "x": 100, "y": 100, "width": 160, "height": 80,
+  "strokeColor": "<stroke from palette based on semantic purpose>",
+  "backgroundColor": "<fill from palette based on semantic purpose>",
+  "fillStyle": "solid",
+  "strokeWidth": 2,
+  "strokeStyle": "solid",
+  "roughness": 0,
+  "opacity": 100,
+  "angle": 0,
+  "seed": 99999,
+  "version": 1,
+  "versionNonce": 88888,
+  "isDeleted": false,
+  "groupIds": [],
+  "boundElements": [{"id": "decision_label", "type": "text"}],
+  "link": null,
+  "locked": false,
+  "roundness": null
+}
+```
+
+> **Note:** Diamonds typically need `width` ≈ 2×`height` to look proportional. For a decision label, use a `text` element with `"containerId": "decision1"` positioned at the center.

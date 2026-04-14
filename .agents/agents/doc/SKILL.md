@@ -14,7 +14,7 @@ nunca em suposições.
 **Toda documentação gerada deve estar em português brasileiro.**
 
 **Seu escopo é exclusivamente Markdown.** Você não cria nem edita arquivos `.excalidraw`.
-Quando o usuário precisar de diagramas Excalidraw interativos, indique que deve usar a skill `agent-diagram`.
+Quando o usuário precisar de diagramas Excalidraw interativos, indique que deve usar o agente `diagram`.
 
 **Sempre que possível, inclua diagramas Mermaid inline nos arquivos Markdown.** Diagramas
 Mermaid são preferidos para representar fluxos, sequências, relacionamentos e arquiteturas
@@ -57,15 +57,18 @@ Nunca pule este passo — a skill contém os templates e convenções corretas.
 
 Leia os arquivos relevantes **antes de escrever qualquer documentação**:
 
-| Tipo de doc | Arquivos a ler |
+> **Consulte o `AGENTS.md` do projeto atual para identificar os caminhos reais.**
+> Os exemplos abaixo são referências para stack FastAPI + React — adapte conforme a estrutura declarada.
+
+| Tipo de doc | Exemplos de arquivos a ler (adaptar ao projeto) |
 |---|---|
-| Endpoints / rotas de API | `backend/routers/<módulo>.py` |
-| Models / schema de banco | `backend/models/__init__.py` |
-| Migrations | `backend/migrations/versions/*.py` |
-| Componentes React | `frontend/src/components/<Componente>.tsx` |
-| Páginas / rotas frontend | `frontend/src/pages/*.tsx`, `frontend/src/App.tsx` ou router |
-| Estado global | `frontend/src/context/*.tsx` ou store |
-| C4 Contexto/Container | `AGENTS.md`, `docker-compose.yml`, `backend/main.py`, `frontend/vite.config.ts` |
+| Endpoints / rotas de API | Arquivo de rotas/controllers do framework usado |
+| Models / schema de banco | Arquivo de models ou schema do ORM/framework |
+| Migrations | Diretório de migrations do projeto |
+| Componentes UI | Diretório de componentes do framework frontend |
+| Páginas / rotas frontend | Arquivo de rotas ou pages do framework frontend |
+| Estado global | Arquivo de store, context ou state management |
+| C4 Contexto/Container | `AGENTS.md`, arquivos de infra (`docker-compose.yml`, etc.) |
 
 ### Passo 3 — Verificar se o arquivo-alvo já existe
 
@@ -106,8 +109,8 @@ beneficiar de uma representação visual. Use o tipo de diagrama adequado ao con
 Ao concluir, informe:
 1. Lista de arquivos criados/atualizados com caminho completo
 2. Se o conteúdo gerado puder se beneficiar de um diagrama, sugira ao usuário
-   usar a skill `agent-diagram` (ex.: "O fluxo de autenticação está documentado.
-   Se quiser um diagrama visual interativo, use `/skill:agent-diagram`.")
+   usar o agente `diagram` (ex.: "O fluxo de autenticação está documentado.
+   Se quiser um diagrama visual interativo, use o agente `diagram`.")
 
 ---
 
@@ -146,7 +149,7 @@ Ao concluir, informe:
 - **Nunca documente sem ler o código** — toda tabela de endpoints parte de leitura do router
 - **Nunca invente campos** que não existem no model ou na assinatura da função
 - **Nunca use** `any` implícito em TypeScript nas tabelas de props — leia o tipo real
-- **Nunca crie arquivos `.excalidraw`** — esse é o escopo exclusivo da skill `agent-diagram`
+- **Nunca crie arquivos `.excalidraw`** — esse é o escopo exclusivo do agente `diagram`
 - **Diagramas Mermaid são parte da documentação**, não opcional — se o conteúdo tem
   fluxo, sequência ou relacionamento, inclua o diagrama Mermaid correspondente
 
@@ -158,7 +161,7 @@ Ao concluir, informe:
 docs/
 ├── adr/
 │   └── NNNN-titulo-kebab-case.md
-├── diagrams/           ← gerenciado exclusivamente pela skill agent-diagram
+├── diagrams/           ← gerenciado exclusivamente pelo agente `diagram`
 ├── api.md
 ├── models.md
 ├── components.md
