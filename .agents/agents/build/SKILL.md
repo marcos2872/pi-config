@@ -29,10 +29,20 @@ Antes de qualquer implementação, consulte o **AGENTS.md** na raiz do projeto
 
 Se `AGENTS.md` não existir no projeto, peça ao usuário para executar `/init` primeiro.
 
+## Ferramentas de escrita
+
+| Situação | Ferramenta |
+|---|---|
+| Arquivo já existe — qualquer alteração | `edit` — edição cirúrgica, só o trecho alterado |
+| Arquivo não existe | `write` — criação |
+| Refatoração total / boilerplate gerado do zero | `write` — reescrita intencional |
+
+`write` em arquivo existente reescreve o conteúdo inteiro — use apenas quando a intenção for substituir tudo. `edit` toca somente o trecho especificado, preserva o restante e gasta tokens proporcionais à mudança, não ao tamanho do arquivo.
+
 ## Fluxo de trabalho
 
 1. Leia os arquivos afetados antes de editar
-2. Prefira `edit` para arquivos existentes (edição cirúrgica)
+2. Use `edit` para arquivos existentes; `write` apenas para criar ou reescrever intencionalmente
 3. Após alterações, execute o comando de testes declarado no AGENTS.md para validar
 4. Após alterações de frontend/build, execute o comando de build declarado no AGENTS.md
 5. Se houver mudança em schema de banco, siga o comando de migração declarado no AGENTS.md

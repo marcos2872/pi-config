@@ -319,8 +319,10 @@ export default function (pi: ExtensionAPI) {
 
       // ── 4. Spawn do sub-agente ────────────────────────────────────────────
       const spawnArgs = [
+        "--print",
         "--mode", "json",
         "--no-session",
+        "--no-extensions",
         "--tools", "read,grep,find,ls,write",
         "--append-system-prompt", promptPath,
         "Analise o projeto e gere o AGENTS.md seguindo as instruções do sistema.",
@@ -361,7 +363,7 @@ export default function (pi: ExtensionAPI) {
       });
 
       // ── 6. Finalização ────────────────────────────────────────────────────
-      const TIMEOUT_MS = 120_000;
+      const TIMEOUT_MS = 300_000;
       const exitCode = await new Promise<number>((resolve) => {
         const timer = setTimeout(() => { proc.kill("SIGTERM"); resolve(124); }, TIMEOUT_MS);
         proc.on("close", (code) => { clearTimeout(timer); resolve(code ?? 0); });

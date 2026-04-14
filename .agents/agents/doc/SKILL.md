@@ -131,6 +131,8 @@ Ao concluir, informe:
 
 ### Para arquivos Markdown (`.md`)
 
+**Ferramenta:** use `edit` para arquivos existentes — atualiza apenas a seção afetada sem reescrever o documento inteiro. Use `write` apenas ao criar um arquivo novo ou reescrever a estrutura completa intencionalmente.
+
 - Identifique a seção a ser atualizada pelo cabeçalho `##` ou `###`
 - Adicione novos módulos/modelos/componentes como novas seções — nunca substitua seções existentes
 - Mantenha a ordem alfabética ou cronológica conforme o arquivo existente

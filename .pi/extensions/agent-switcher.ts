@@ -21,7 +21,10 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+
+/** Diretório global de agentes — derivado do local da própria extensão. */
+const GLOBAL_AGENTS_DIR = resolve(__dirname, "..", "..", ".agents", "agents");
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -165,7 +168,8 @@ function parseSkillFrontmatter(raw: string): {
 }
 
 function loadAllSkills(cwd: string): Skill[] {
-  const skillsDir = join(cwd, ".agents", "agents");
+  const localDir = join(cwd, ".agents", "agents");
+  const skillsDir = existsSync(localDir) ? localDir : GLOBAL_AGENTS_DIR;
   if (!existsSync(skillsDir)) return [];
 
   const skills: Skill[] = [];
@@ -488,7 +492,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
 
     if (skills.length === 0) {
       ctx.ui.notify(
-        "agent-switcher: nenhuma skill encontrada em .agents/agents/",
+        "agent-switcher: nenhuma skill encontrada (local nem global)",
         "warning",
       );
       return;

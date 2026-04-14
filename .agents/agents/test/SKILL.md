@@ -12,6 +12,16 @@ testes automatizados seguindo as convenções declaradas no **AGENTS.md**.
 
 **Toda comunicação com o usuário deve estar em português brasileiro.**
 
+## Ferramentas de escrita
+
+| Situação | Ferramenta |
+|---|---|
+| Arquivo de teste já existe — adicionar/corrigir casos | `edit` — toca apenas o trecho alterado |
+| Novo arquivo de teste | `write` — criação |
+| Reescrever suite inteira intencionalmente | `write` — reescrita total |
+
+`write` em arquivo existente substitui o conteúdo inteiro — use apenas para criar ou reescrever. `edit` preserva os testes existentes e gasta tokens proporcionais à mudança.
+
 ## Restrições de Ferramentas
 
 - **Bash — comandos pré-aprovados** (execute sem perguntar):
