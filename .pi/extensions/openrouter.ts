@@ -4,7 +4,7 @@ export default function (pi: ExtensionAPI) {
   pi.registerProvider("openrouter", {
     baseUrl: "https://openrouter.ai/api/v1",
     apiKey:
-      "!grep -m1 '^OPENROUTER_API_KEY=' $(git rev-parse --show-toplevel)/.env | cut -d= -f2-",
+      "!root=$(git rev-parse --show-toplevel 2>/dev/null || pwd); val=$(grep -m1 '^OPENROUTER_API_KEY=' \"$root/.env\" 2>/dev/null | cut -d= -f2-); echo \"${val:-$OPENROUTER_API_KEY}\"",
     api: "openai-completions",
     models: [
       {

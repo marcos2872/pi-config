@@ -175,14 +175,22 @@ export default function (pi: ExtensionAPI) {
       // Cabeçalho da sessão
       const header = `Sessão (${duracaoMin}min) — ${count} rewrite${count !== 1 ? "s" : ""}`;
 
-      // Lista de rewrites com horário
-      const rewriteLines = sessionRewrites.map((r, i) => {
+      // Lista de rewrites com horário (máx. 10 mais recentes)
+      const MAX_DISPLAY_REWRITES = 10;
+      const hidden = Math.max(0, sessionRewrites.length - MAX_DISPLAY_REWRITES);
+      const visibleRewrites = sessionRewrites.slice(-MAX_DISPLAY_REWRITES);
+      const rewriteLines: string[] = [];
+      if (hidden > 0) {
+        rewriteLines.push(`  +${hidden} rewrite${hidden !== 1 ? "s" : ""} anterior${hidden !== 1 ? "es" : ""} omitido${hidden !== 1 ? "s" : ""}`);
+      }
+      visibleRewrites.forEach((r, i) => {
+        const idx = sessionRewrites.length - visibleRewrites.length + i + 1;
         const hora = new Date(r.timestamp).toLocaleTimeString("pt-BR", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
         });
-        return `  ${String(i + 1).padStart(2)}. [${hora}] ${r.original}\n        → ${r.rewritten}`;
+        rewriteLines.push(`  ${String(idx).padStart(2)}. [${hora}] ${r.original}\n        → ${r.rewritten}`);
       });
 
       const msg = [
@@ -232,11 +240,16 @@ export default function (pi: ExtensionAPI) {
         const text = rtkExec(args, ctx.cwd);
         return { content: [{ type: "text", text }], details: {} };
       } catch (e: any) {
+        // exit code 1 = nenhum match encontrado (resultado válido, não erro)
+        if (e?.status === 1) {
+          return { content: [{ type: "text", text: "(no matches found)" }], details: {} };
+        }
         return {
-          content: [{ type: "text", text: e.message }],
+          content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }],
           isError: true,
           details: {},
         };
+      }
       }
     },
   });
@@ -263,7 +276,7 @@ export default function (pi: ExtensionAPI) {
         return { content: [{ type: "text", text }], details: {} };
       } catch (e: any) {
         return {
-          content: [{ type: "text", text: e.message }],
+          content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }],
           isError: true,
           details: {},
         };
@@ -288,7 +301,7 @@ export default function (pi: ExtensionAPI) {
         return { content: [{ type: "text", text }], details: {} };
       } catch (e: any) {
         return {
-          content: [{ type: "text", text: e.message }],
+          content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }],
           isError: true,
           details: {},
         };

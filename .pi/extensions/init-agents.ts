@@ -13,6 +13,7 @@
  *   /init  →  confirma, spawna sub-agente, exibe progresso, notifica resultado
  */
 
+import { DynamicBorder } from "@mariozechner/pi-coding-agent";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Container, Text } from "@mariozechner/pi-tui";
 import { spawn } from "node:child_process";
@@ -267,7 +268,7 @@ export default function (pi: ExtensionAPI) {
             theme.fg("muted", "  descobrindo projeto…"),
             0, 0,
           ));
-          box.addChild(new Text(theme.fg("muted", "─".repeat(42)), 0, 0));
+          box.addChild(new DynamicBorder((s: string) => theme.fg("muted", s)));
 
           const skipped = steps.length - MAX_VISIBLE_STEPS;
           if (skipped > 0) {
@@ -360,15 +361,22 @@ export default function (pi: ExtensionAPI) {
       });
 
       // ── 6. Finalização ────────────────────────────────────────────────────
+      const TIMEOUT_MS = 120_000;
       const exitCode = await new Promise<number>((resolve) => {
-        proc.on("close", (code) => resolve(code ?? 0));
-        proc.on("error", () => resolve(1));
+        const timer = setTimeout(() => { proc.kill("SIGTERM"); resolve(124); }, TIMEOUT_MS);
+        proc.on("close", (code) => { clearTimeout(timer); resolve(code ?? 0); });
+        proc.on("error", () => { clearTimeout(timer); resolve(1); });
       });
 
       stopFeedback();
       cleanupTemp(tmpDir);
 
-      if (exitCode === 0 && fs.existsSync(agentsPath)) {
+      if (exitCode === 124) {
+        ctx.ui.notify(
+          `❌ /init atingiu o timeout de ${TIMEOUT_MS / 1_000}s — sub-agente encerrado.`,
+          "error",
+        );
+      } else if (exitCode === 0 && fs.existsSync(agentsPath)) {
         ctx.ui.notify(
           `✅ AGENTS.md ${exists ? "atualizado" : "gerado"} — ${agentsPath}`,
           "success",

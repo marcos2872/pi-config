@@ -52,6 +52,12 @@ const PLAN_AGENTS = new Set(["plan"]);
  */
 const AUDIT_AGENTS = new Set(["quality", "qa"]);
 
+/**
+ * Agentes de escrita parcial: têm acesso completo às ferramentas mas suas skills
+ * restringem escrita a diretórios específicos (docs/, tests/).
+ */
+const PARTIAL_WRITE_AGENTS = new Set(["doc", "test"]);
+
 /** Ferramentas liberadas para agentes somente-leitura (sem bash). */
 const READ_ONLY_TOOLS = ["read", "grep", "find", "ls"];
 
@@ -173,9 +179,11 @@ function loadAllSkills(cwd: string): Skill[] {
       try {
         const raw = readFileSync(skillFile, "utf-8");
         const { name, description } = parseSkillFrontmatter(raw);
+        const cut = raw.slice(0, MAX_SKILL_CHARS);
+        const lastNl = cut.lastIndexOf("\n");
         const content =
           raw.length > MAX_SKILL_CHARS
-            ? raw.slice(0, MAX_SKILL_CHARS) + "\n\n[... conteúdo truncado ...]"
+            ? (lastNl > 0 ? cut.slice(0, lastNl) : cut) + "\n\n[... conteúdo truncado ...]"
             : raw;
         skills.push({
           dirName: entry.name,
@@ -210,16 +218,19 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
 
   // ── helpers visuais ──────────────────────────────────────────────────────
 
+  function modeIcon(skill: Skill): string {
+    if (skill.readOnly) return "👁";
+    if (PLAN_AGENTS.has(skill.dirName)) return "📋";
+    if (AUDIT_AGENTS.has(skill.dirName)) return "🔍";
+    if (PARTIAL_WRITE_AGENTS.has(skill.dirName)) return "✏️";
+    return "▶";
+  }
+
   function updateStatus(ctx: ExtensionContext): void {
     if (!activeSkill) return;
-    const icon = activeSkill.readOnly
-      ? "▶"
-      : AUDIT_AGENTS.has(activeSkill.dirName)
-        ? "▶"
-        : "▶";
     ctx.ui.setStatus(
       "agent-switcher",
-      ctx.ui.theme.fg(activeSkill.colorToken, `${icon} ${activeSkill.label}`),
+      ctx.ui.theme.fg(activeSkill.colorToken, `${modeIcon(activeSkill)} ${activeSkill.label}`),
     );
   }
 
@@ -269,7 +280,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
       value: s.dirName,
       label:
         (s.dirName === activeSkill?.dirName ? `${s.label} (ativo)` : s.label) +
-        (s.readOnly ? " 👁" : PLAN_AGENTS.has(s.dirName) ? " 📋" : AUDIT_AGENTS.has(s.dirName) ? " 🔍" : ""),
+        (s.readOnly ? " 👁" : PLAN_AGENTS.has(s.dirName) ? " 📋" : AUDIT_AGENTS.has(s.dirName) ? " 🔍" : PARTIAL_WRITE_AGENTS.has(s.dirName) ? " ✏️" : ""),
       description: s.description,
     }));
 
@@ -300,7 +311,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
           new Text(
             theme.fg(
               "dim",
-              " ↑↓ navegar  •  enter selecionar  •  esc cancelar  •  👁 = somente-leitura  •  📋 = planejamento",
+              " ↑↓ navegar  •  enter selecionar  •  esc cancelar  •  👁 somente-leitura  •  📋 planejamento  •  🔍 auditoria  •  ✏️ escrita parcial",
             ),
           ),
         );
@@ -327,13 +338,31 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
   // ── atalho e comando ─────────────────────────────────────────────────────
 
   pi.registerShortcut(Key.alt("a"), {
-    description: "Alternar agente (ask ↔ build)",
+    description: "Ciclar entre agentes",
     handler: async (ctx) => cycleAgent(ctx),
   });
 
   pi.registerCommand("agent", {
-    description: "Selecionar agente ativo (ask | build)",
+    description: "Abrir seletor visual de agentes",
     handler: async (_args, ctx) => showAgentSelector(ctx),
+  });
+
+  pi.registerCommand("agent-reload", {
+    description: "Recarrega skills de .agents/agents/ sem reiniciar o pi",
+    handler: async (_args, ctx) => {
+      skills = loadAllSkills(ctx.cwd);
+      if (activeSkill) {
+        const refreshed = skills.find((s) => s.dirName === activeSkill!.dirName);
+        if (refreshed) {
+          activeSkill = refreshed;
+          updateStatus(ctx);
+        }
+      }
+      ctx.ui.notify(
+        `${skills.length} agente${skills.length !== 1 ? "s" : ""} recarregado${skills.length !== 1 ? "s" : ""}`,
+        "success",
+      );
+    },
   });
 
   // ── restrições para agentes somente-leitura ───────────────────────────────
@@ -494,10 +523,12 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
     updateStatus(ctx);
   });
 
-  // Persiste estado a cada turn para que session restore funcione
+  // Persiste estado apenas quando o agente muda (evita inflar o histórico)
+  let lastPersistedDirName: string | null = null;
   pi.on("turn_start", async () => {
-    if (activeSkill) {
+    if (activeSkill && activeSkill.dirName !== lastPersistedDirName) {
       pi.appendEntry("agent-switcher-state", { dirName: activeSkill.dirName });
+      lastPersistedDirName = activeSkill.dirName;
     }
   });
 }
