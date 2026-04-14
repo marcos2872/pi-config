@@ -1,6 +1,6 @@
 # pi-config
 
-Repositório de configuração pessoal do **[pi](https://github.com/mariozechner/pi-coding-agent)** — coding agent de terminal com suporte a múltiplos modelos de IA.
+Repositório de configuração pessoal do **[pi](https://shittycodingagent.ai/)** — coding agent de terminal com suporte a múltiplos modelos de IA.
 
 ## O que é o pi?
 
@@ -16,6 +16,7 @@ pi-config/
 │   │   ├── ask/              # Agente somente-leitura — responde perguntas
 │   │   ├── build/            # Agente de código — implementa e corrige
 │   │   ├── doc/              # Agente de documentação técnica
+│   │   ├── geral/            # Agente geral — propósito livre, sem restrições de domínio
 │   │   ├── plan/             # Agente de planejamento — produz planos em .pi/plans/
 │   │   ├── qa/               # Agente de QA — analisa bugs e vulnerabilidades
 │   │   ├── quality/          # Auditor de qualidade — lint, tipos e testes
@@ -45,6 +46,7 @@ pi-config/
 | `ask`     | Modo somente-leitura — responde perguntas sobre o projeto sem modificar nada |
 | `build`   | Implementa funcionalidades, corrige bugs e refatora código |
 | `doc`     | Cria e atualiza ADRs, tabelas de API, diagramas e estrutura de docs |
+| `geral`   | Propósito geral — lê, escreve, executa e responde sem restrições de domínio |
 | `plan`    | Planeja funcionalidades e mudanças arquiteturais, produz planos em `.pi/plans/` |
 | `qa`      | Analisa código em busca de bugs, edge cases e vulnerabilidades |
 | `quality` | Audita conformidade com lint, tipos e testes |
@@ -72,11 +74,11 @@ As extensões ficam em `.pi/extensions/` e são carregadas automaticamente pelo 
 - **`agent-switcher.ts`** — troca de agente via **Alt+A** (ciclo) ou `/agent` (seletor visual); controla permissões de ferramentas por modo (somente-leitura, planejamento, auditoria, escrita completa).
 - **`agents-resolver.ts`** — registra os caminhos `.agents/agents/` e `.agents/skills/` para que o pi descubra os agentes e skills automaticamente.
 - **`openrouter.ts`** — integra o provedor [OpenRouter](https://openrouter.ai), permitindo uso de dezenas de modelos via uma única API key.
-- **`rtk.ts`** — integra o [RTK (Rust Token Killer)](https://github.com/rtk-ai/rtk) para reduzir o consumo de tokens em 60-90%. Intercepta chamadas bash via `rtk rewrite` e substitui os built-ins `grep`, `find` e `ls` por versões comprimidas. O `read` nativo é preservado para manter a qualidade em arquivos grandes. Exibe notificação de instalação quando o binário não está disponível. Comandos disponíveis:
+- **`rtk.ts`** — integra o [RTK (Rust Token Killer)](https://www.rtk-ai.app/) para reduzir o consumo de tokens em 60-90%. Intercepta chamadas bash via `rtk rewrite` e substitui os built-ins `grep`, `find` e `ls` por versões comprimidas. O `read` nativo é preservado para manter a qualidade em arquivos grandes. Exibe notificação de instalação quando o binário não está disponível. Comandos disponíveis:
   - **`/rtk-reload`** — re-verifica se o rtk está instalado e recarrega o pi
   - **`/rtk-logs`** — exibe a economia de tokens da sessão atual e estatísticas globais
 
-  Pré-requisito: `brew install rtk` ou `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`
+  Pré-requisito: instale via [rtk-ai.app](https://www.rtk-ai.app/) — `brew install rtk` ou `curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh`
 
 ## AGENTS.md — Configuração do projeto
 
@@ -90,7 +92,7 @@ O `/init` detecta `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom
 
 ## Como usar
 
-Consulte a documentação oficial do pi para instruções de instalação e configuração:
+Consulte a [documentação oficial do pi](https://shittycodingagent.ai/) para instruções de instalação e configuração:
 
 ```bash
 pi --help

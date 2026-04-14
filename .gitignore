@@ -4,3 +4,5 @@
 
 # Dependências Python da skill excalidraw
 .agents/skills/excalidraw/references/.venv/
+
+.obsidian/

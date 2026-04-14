@@ -62,8 +62,8 @@ If you're diagramming a protocol, API, or framework:
 3. Understand how the pieces actually connect
 4. Use real terminology, not generic placeholders
 
-Bad: "Protocol" → "Frontend"
-Good: "AG-UI streams events (RUN_STARTED, STATE_DELTA, A2UI_UPDATE)" → "CopilotKit renders via createA2UIMessageRenderer()"
+Bad: "Protocol" -> "Frontend"
+Good: "AG-UI streams events (RUN_STARTED, STATE_DELTA, A2UI_UPDATE)" -> "CopilotKit renders via createA2UIMessageRenderer()"
 
 **Research makes diagrams accurate AND educational.**
 
@@ -105,7 +105,7 @@ Comprehensive diagrams operate at multiple zoom levels simultaneously. Think of 
 ### Level 1: Summary Flow
 A simplified overview showing the full pipeline or process at a glance. Often placed at the top or bottom of the diagram.
 
-*Example*: `Input → Processing → Output` or `Client → Server → Database`
+*Example*: `Input -> Processing -> Output` or `Client -> Server -> Database`
 
 ### Level 2: Section Boundaries
 Labeled regions that group related components. These create visual "rooms" that help viewers understand what belongs together.
@@ -133,7 +133,7 @@ Evidence artifacts, code snippets, and concrete examples within each section. Th
 
 | Simple Diagram | Comprehensive Diagram |
 |----------------|----------------------|
-| Generic labels: "Input" → "Process" → "Output" | Specific: shows what the input/output actually looks like |
+| Generic labels: "Input" -> "Process" -> "Output" | Specific: shows what the input/output actually looks like |
 | Named boxes: "API", "Database", "Client" | Named boxes + examples of actual requests/responses |
 | "Events" or "Messages" label | Timeline with real event/message names from the spec |
 | "UI" or "Dashboard" rectangle | Mockup showing actual UI elements and content |
@@ -189,7 +189,7 @@ For each concept, find the visual pattern that mirrors its behavior:
 | Is a sequence of steps | **Timeline** (line + dots + free-floating labels) |
 | Loops or improves continuously | **Spiral/Cycle** (arrow returning to start) |
 | Is an abstract state or context | **Cloud** (overlapping ellipses) |
-| Transforms input to output | **Assembly line** (before → process → after) |
+| Transforms input to output | **Assembly line** (before -> process -> after) |
 | Compares two things | **Side-by-side** (parallel with contrast) |
 | Separates into phases | **Gap/Break** (visual separation between sections) |
 
@@ -203,22 +203,29 @@ Before JSON, mentally trace how the eye moves through the diagram. There should 
 Only now create the Excalidraw elements. **See below for how to handle large diagrams.**
 
 ### Step 6: Render & Validate (MANDATORY)
-After generating the JSON, you MUST run the render-view-fix loop until the diagram looks right. This is not optional — see the **Render & Validate** section below for the full process.
+After generating the JSON, you MUST run the render-view-fix loop until the diagram looks right. This is not optional -- see the **Render & Validate** section below for the full process.
 
 ---
 
 ## Large / Comprehensive Diagram Strategy
 
-**For comprehensive or technical diagrams, you MUST build the JSON one section at a time.** Do NOT attempt to generate the entire file in a single pass. This is a hard constraint — Claude Code has a ~32,000 token output limit per response, and a comprehensive diagram easily exceeds that in one shot. Even if it didn't, generating everything at once leads to worse quality. Section-by-section is better in every way.
+> **MANDATORY CHECKPOINT -- do this before generating any JSON:**
+> 1. Count every element you plan to create (shapes + arrows + text labels combined).
+> 2. If the count is **> 20**, you are **prohibited** from using `write` with the full diagram content in a single call. You MUST use the section-by-section workflow below -- no exceptions.
+> 3. Thinking "I'll write everything at once and split it into sections mentally" is wrong. Each section must be a separate tool call.
 
-> **Simple diagram exception:** If the total element count is **≤ 20 elements** (shapes + arrows + text labels combined), it is safe to generate the entire file in a single pass. If you are unsure, count the planned elements first — if the count exceeds 20, use the section-by-section workflow below.
+**Why `write` fails for large diagrams:** The `write` tool requires a `content` parameter. When a response is cut off mid-generation (because the JSON exceeds the output token limit), the tool call is emitted *without* `content`, causing the error `Validation failed: must have required property 'content'`. The solution is NOT to retry `write` -- the solution is to never attempt to write a large diagram in a single call.
+
+**If you see `terminated` or `content: must have required property 'content'`:** Stop immediately. Do NOT retry `write`. Switch to the section-by-section workflow: create the base file with `write` (wrapper + section 1 only), then add each subsequent section with `edit`.
+
+> **Simple diagram exception:** If the total element count is **<= 20 elements** (shapes + arrows + text labels combined), it is safe to generate the entire file in a single `write` call. If you are unsure, count first -- if the count exceeds 20, use the section-by-section workflow.
 
 ### The Section-by-Section Workflow
 
 **Phase 1: Build each section**
 
-1. **Create the base file** with the JSON wrapper (`type`, `version`, `appState`, `files`) and the first section of elements.
-2. **Add one section per edit.** Each section gets its own dedicated pass — take your time with it. Think carefully about the layout, spacing, and how this section connects to what's already there.
+1. **Create the base file with `write`** -- use `write` exactly once, for the JSON wrapper (`type`, `version`, `appState`, `files`) and the first section of elements only. After this step, **never use `write` on the diagram file again**.
+2. **Add one section per `edit`** -- each subsequent section is appended by inserting elements into the `"elements": [...]` array using `edit`. One section = one `edit` call. Take your time with each section; think carefully about the layout, spacing, and how this section connects to what's already there.
 3. **Use descriptive string IDs** (e.g., `"trigger_rect"`, `"arrow_fan_left"`) so cross-section references are readable.
 4. **Namespace seeds by section** (e.g., section 1 uses 100xxx, section 2 uses 200xxx) to avoid collisions.
 5. **Update cross-section bindings** as you go. When a new section's element needs to bind to an element from a previous section (e.g., an arrow connecting sections), edit the earlier element's `boundElements` array at the same time.
@@ -234,7 +241,7 @@ Fix any alignment or binding issues before rendering.
 
 **Phase 3: Render & validate**
 
-Now run the render-view-fix loop from the Render & Validate section. This is where you'll catch visual issues that aren't obvious from JSON — overlaps, clipping, imbalanced composition.
+Now run the render-view-fix loop from the Render & Validate section. This is where you'll catch visual issues that aren't obvious from JSON -- overlaps, clipping, imbalanced composition.
 
 ### Section Boundaries
 
@@ -242,13 +249,15 @@ Plan your sections around natural visual groupings from the diagram plan. A typi
 
 - **Section 1**: Entry point / trigger
 - **Section 2**: First decision or routing
-- **Section 3**: Main content (hero section — may be the largest single section)
+- **Section 3**: Main content (hero section -- may be the largest single section)
 - **Section 4-N**: Remaining phases, outputs, etc.
 
 Each section should be independently understandable: its elements, internal arrows, and any cross-references to adjacent sections.
 
 ### What NOT to Do
 
+- **Don't use `write` with the full diagram content.** The response will be cut off, the `content` parameter will be missing, and you'll get a validation error. Use `write` only for the base file (wrapper + section 1), then `edit` for all subsequent sections.
+- **Don't retry `write` after a `terminated` or `content` validation error.** Retrying the same approach produces the same error. Switch to `edit`-based section-by-section workflow immediately.
 - **Don't generate the entire diagram in one response.** You will hit the output token limit and produce truncated, broken JSON. Even if the diagram is small enough to fit, splitting into sections produces better results.
 - **Don't use a coding agent** to generate the JSON. The agent won't have sufficient context about the skill's rules, and the coordination overhead negates any benefit.
 - **Don't write a Python generator script.** The templating and coordinate math seem helpful but introduce a layer of indirection that makes debugging harder. Hand-crafted JSON with descriptive IDs is more maintainable.
@@ -260,48 +269,48 @@ Each section should be independently understandable: its elements, internal arro
 ### Fan-Out (One-to-Many)
 Central element with arrows radiating to multiple targets. Use for: sources, PRDs, root causes, central hubs.
 ```
-        ○
-       ↗
-  □ → ○
-       ↘
-        ○
+        o
+       /
+  [] -> o
+       \
+        o
 ```
 
 ### Convergence (Many-to-One)
 Multiple inputs merging through arrows to single output. Use for: aggregation, funnels, synthesis.
 ```
-  ○ ↘
-  ○ → □
-  ○ ↗
+  o \
+  o -> []
+  o /
 ```
 
 ### Tree (Hierarchy)
 Parent-child branching with connecting lines and free-floating text (no boxes needed). Use for: file systems, org charts, taxonomies.
 ```
   label
-  ├── label
-  │   ├── label
-  │   └── label
-  └── label
+  |-- label
+  |   |-- label
+  |   +-- label
+  +-- label
 ```
 Use `line` elements for the trunk and branches, free-floating text for labels.
 
 ### Spiral/Cycle (Continuous Loop)
 Elements in sequence with arrow returning to start. Use for: feedback loops, iterative processes, evolution.
 ```
-  □ → □
-  ↑     ↓
-  □ ← □
+  [] -> []
+  ^       |
+  [] <- []
 ```
 
 ### Cloud (Abstract State)
 Overlapping ellipses with varied sizes. Use for: context, memory, conversations, mental states.
 
 ### Assembly Line (Transformation)
-Input → Process Box → Output with clear before/after. Use for: transformations, processing, conversion.
+Input -> Process Box -> Output with clear before/after. Use for: transformations, processing, conversion.
 ```
-  ○○○ → [PROCESS] → □□□
-  chaos              order
+  ooo -> [PROCESS] -> [][]
+  chaos               order
 ```
 
 ### Side-by-Side (Comparison)
@@ -319,11 +328,11 @@ Use lines (type: `line`, not arrows) as primary structural elements instead of b
 
 ```
 Timeline:           Tree:
-  ●─── Label 1        │
-  │                   ├── item
-  ●─── Label 2        │   ├── sub
-  │                   │   └── sub
-  ●─── Label 3        └── item
+  *--- Label 1        |
+  |                   |-- item
+  *--- Label 2        |   |-- sub
+  |                   |   +-- sub
+  *--- Label 3        +-- item
 ```
 
 Lines + free-floating text often creates a cleaner result than boxes + contained text.
@@ -332,7 +341,7 @@ Lines + free-floating text often creates a cleaner result than boxes + contained
 
 ## Shape Meaning
 
-Choose shape based on what it represents—or use no shape at all:
+Choose shape based on what it represents--or use no shape at all:
 
 | Concept Type | Shape | Why |
 |--------------|-------|-----|
@@ -352,11 +361,11 @@ Choose shape based on what it represents—or use no shape at all:
 
 ## Color as Meaning
 
-Colors encode information, not decoration. Every color choice should come from `references/color-palette.md` — the semantic shape colors, text hierarchy colors, and evidence artifact colors are all defined there.
+Colors encode information, not decoration. Every color choice should come from `references/color-palette.md` -- the semantic shape colors, text hierarchy colors, and evidence artifact colors are all defined there.
 
 **Key principles:**
 - Each semantic purpose (start, end, decision, AI, error, etc.) has a specific fill/stroke pair
-- Free-floating text uses color for hierarchy (titles, subtitles, details — each at a different level)
+- Free-floating text uses color for hierarchy (titles, subtitles, details -- each at a different level)
 - Evidence artifacts (code snippets, JSON examples) use their own dark background + colored text scheme
 - Always pair a darker stroke with a lighter fill for contrast
 
@@ -369,15 +378,15 @@ Colors encode information, not decoration. Every color choice should come from `
 For clean, professional diagrams:
 
 ### Roughness
-- `roughness: 0` — Clean, crisp edges. Use for modern/technical diagrams.
-- `roughness: 1` — Hand-drawn, organic feel. Use for brainstorming/informal diagrams.
+- `roughness: 0` -- Clean, crisp edges. Use for modern/technical diagrams.
+- `roughness: 1` -- Hand-drawn, organic feel. Use for brainstorming/informal diagrams.
 
 **Default to 0** for most professional use cases.
 
 ### Stroke Width
-- `strokeWidth: 1` — Thin, elegant. Good for lines, dividers, subtle connections.
-- `strokeWidth: 2` — Standard. Good for shapes and primary arrows.
-- `strokeWidth: 4` — Bold. Use sparingly for emphasis (main flow line, key connections).
+- `strokeWidth: 1` -- Thin, elegant. Good for lines, dividers, subtle connections.
+- `strokeWidth: 2` -- Standard. Good for shapes and primary arrows.
+- `strokeWidth: 4` -- Bold. Use sparingly for emphasis (main flow line, key connections).
 
 ### Opacity
 **Always use `opacity: 100` for all elements.** Use color, size, and stroke width to create hierarchy instead of transparency.
@@ -394,16 +403,16 @@ Instead of full shapes, use small dots (10-20px ellipses) as:
 ## Layout Principles
 
 ### Hierarchy Through Scale
-- **Hero**: 300×150 - visual anchor, most important
-- **Primary**: 180×90
-- **Secondary**: 120×60
-- **Small**: 60×40
+- **Hero**: 300x150 - visual anchor, most important
+- **Primary**: 180x90
+- **Secondary**: 120x60
+- **Small**: 60x40
 
 ### Whitespace = Importance
 The most important element has the most empty space around it (200px+).
 
 ### Flow Direction
-Guide the eye: typically left→right or top→bottom for sequences, radial for hub-and-spoke.
+Guide the eye: typically left->right or top->bottom for sequences, radial for hub-and-spoke.
 
 ### Connections Required
 Position alone doesn't show relationships. If A relates to B, there must be an arrow.
@@ -450,33 +459,33 @@ See `references/element-templates.md` for copy-paste JSON templates for each ele
 
 ## Icon & Template Libraries (use automatically)
 
-Two libraries are available in `references/`. **Read `references/library-catalog.md` at the start of any technical diagram** — it lists all 65 icons and 8 system-design templates and the rules for when to use each one automatically.
+Two libraries are available in `references/`. **Read `references/library-catalog.md` at the start of any technical diagram** -- it lists all 65 icons and 8 system-design templates and the rules for when to use each one automatically.
 
 | Library file | Contents |
 |---|---|
-| `references/icons.excalidrawlib` | 65 icons: languages (python, react, node, go…), tools (jest, vite…), UI actions (cloud, upload, sql, password…), file types |
+| `references/icons.excalidrawlib` | 65 icons: languages (python, react, node, go...), tools (jest, vite...), UI actions (cloud, upload, sql, password...), file types |
 | `references/system-design-template.excalidrawlib` | 8 layout templates: steps, flow, table, code-block, system-diagram, note, separator, node-circle |
 
 ### How to incorporate an icon
 
-**Step 1 — Extract the elements:**
+**Step 1 -- Extract the elements:**
 ```bash
 cd .agents/skills/excalidraw/references && uv run python extract_lib_item.py icons.excalidrawlib <name> --x <X> --y <Y> --width 80
 ```
 
-**Step 2 — Copy the output** (a JSON array) and insert every element into the diagram's `elements[]` array using `edit`.
+**Step 2 -- Copy the output** (a JSON array) and insert every element into the diagram's `elements[]` array using `edit`.
 
-**Step 3 — Re-render** to confirm placement.
+**Step 3 -- Re-render** to confirm placement.
 
 ### Usage rules
 
-- **Always apply automatically** — do not ask the user. If a diagram node represents Python, React, a database, cloud, auth, etc., use the matching icon (see `library-catalog.md` for the full mapping table).
+- **Always apply automatically** -- do not ask the user. If a diagram node represents Python, React, a database, cloud, auth, etc., use the matching icon (see `library-catalog.md` for the full mapping table).
 - **Default size:** `--width 80`. Use `--width 60` for small inline markers.
-- **Icon style:** library icons use `roughness: 1` (hand-drawn). This is intentional — do not override their `roughness` or `strokeWidth` values when inserting them.
+- **Icon style:** library icons use `roughness: 1` (hand-drawn). This is intentional -- do not override their `roughness` or `strokeWidth` values when inserting them.
 - **Placement:** place the icon above or to the left of the node label. Leave at least 10px gap between icon and label text.
-- **IDs:** the extraction script generates new unique IDs automatically — never reuse IDs from the library file directly.
+- **IDs:** the extraction script generates new unique IDs automatically -- never reuse IDs from the library file directly.
 
-### Quick reference — most common icons
+### Quick reference -- most common icons
 
 | Concept | Icon name | Library |
 |---|---|---|
@@ -492,14 +501,14 @@ cd .agents/skills/excalidraw/references && uv run python extract_lib_item.py ico
 | File upload | `upload` | icons |
 | Search / index | `search` | icons |
 | Shell / CLI | `shell` | icons |
-| User→API→DB skeleton | `system-diagram` | system-design-template |
+| User->API->DB skeleton | `system-diagram` | system-design-template |
 | Numbered steps flow | `steps` | system-design-template |
 
 ---
 
 ## Render & Validate (MANDATORY)
 
-You cannot judge a diagram from JSON alone. After generating or editing the Excalidraw JSON, you MUST render it to PNG, view the image, and fix what you see — in a loop until it's right. This is a core part of the workflow, not a final check.
+You cannot judge a diagram from JSON alone. After generating or editing the Excalidraw JSON, you MUST render it to PNG, view the image, and fix what you see -- in a loop until it's right. This is a core part of the workflow, not a final check.
 
 ### How to Render
 
@@ -507,7 +516,7 @@ You cannot judge a diagram from JSON alone. After generating or editing the Exca
 cd .agents/skills/excalidraw/references && uv run python render_excalidraw.py "$(pwd)/<path-to-file.excalidraw>"
 ```
 
-> **Use sempre caminho absoluto** para o arquivo `.excalidraw` — o script roda a partir do diretório `references/`, então caminhos relativos como `docs/diagrams/foo.excalidraw` serão resolvidos incorretamente. A substituição `$(pwd)/` garante o caminho absoluto a partir da raiz do projeto.
+> **Use sempre caminho absoluto** para o arquivo `.excalidraw` -- o script roda a partir do diretorio `references/`, entao caminhos relativos como `docs/diagrams/foo.excalidraw` serao resolvidos incorretamente. A substituicao `$(pwd)/` garante o caminho absoluto a partir da raiz do projeto.
 
 This outputs a PNG next to the `.excalidraw` file. Then use the **Read tool** on the PNG to actually view it.
 
@@ -515,13 +524,13 @@ This outputs a PNG next to the `.excalidraw` file. Then use the **Read tool** on
 
 After generating the initial JSON, run this cycle:
 
-**1. Render & View** — Run the render script, then Read the PNG.
+**1. Render & View** -- Run the render script, then Read the PNG.
 
-**2. Audit against your original vision** — Before looking for bugs, compare the rendered result to what you designed in Steps 1-4. Ask:
+**2. Audit against your original vision** -- Before looking for bugs, compare the rendered result to what you designed in Steps 1-4. Ask:
 - Does the visual structure match the conceptual structure you planned?
 - Does each section use the pattern you intended (fan-out, convergence, timeline, etc.)?
 - Does the eye flow through the diagram in the order you designed?
-- Is the visual hierarchy correct — hero elements dominant, supporting elements smaller?
+- Is the visual hierarchy correct -- hero elements dominant, supporting elements smaller?
 - For technical diagrams: are the evidence artifacts (code snippets, data examples) readable and properly placed?
 
 **3. Check for visual defects:**
@@ -535,16 +544,16 @@ After generating the initial JSON, run this cycle:
 - Text too small to read at the rendered size
 - Overall composition feels lopsided or unbalanced
 
-**4. Fix** — Edit the JSON to address everything you found. Common fixes:
+**4. Fix** -- Edit the JSON to address everything you found. Common fixes:
 - Widen containers when text is clipped
 - Adjust `x`/`y` coordinates to fix spacing and alignment
 - Add intermediate waypoints to arrow `points` arrays to route around elements
 - Reposition labels closer to the element they describe
 - Resize elements to rebalance visual weight across sections
 
-**5. Re-render & re-view** — Run the render script again and Read the new PNG.
+**5. Re-render & re-view** -- Run the render script again and Read the new PNG.
 
-**6. Repeat** — Keep cycling until the diagram passes both the vision check (Step 2) and the defect check (Step 3). Typically takes 2-4 iterations. Don't stop after one pass just because there are no critical bugs — if the composition could be better, improve it.
+**6. Repeat** -- Keep cycling until the diagram passes both the vision check (Step 2) and the defect check (Step 3). Typically takes 2-4 iterations. Don't stop after one pass just because there are no critical bugs -- if the composition could be better, improve it.
 
 ### When to Stop
 
@@ -600,7 +609,7 @@ uv run playwright install chromium
 ### Libraries
 28. **Icons used**: Technical diagrams with technology/service nodes include icons from `icons.excalidrawlib`
 29. **Extraction script used**: Icons were added via `extract_lib_item.py` (not hand-crafted)
-30. **Icon placement**: Icons are placed above/beside the node label with ≥ 10px gap
+30. **Icon placement**: Icons are placed above/beside the node label with >= 10px gap
 
 ### Visual Validation (Render Required)
 21. **Rendered to PNG**: Diagram has been rendered and visually inspected
