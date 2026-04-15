@@ -95,6 +95,8 @@ Produza apenas arquivos `.md` — nunca `.excalidraw` ou qualquer outro formato.
 **Diagramas Mermaid:** inclua blocos ` ```mermaid ` sempre que o conteúdo se
 beneficiar de uma representação visual. Use o tipo de diagrama adequado ao conteúdo:
 
+> ⚠️ **Nunca use `\n` literal em Mermaid.** Não escreva a sequência barra-invertida + `n` dentro de labels ou textos de nós — isso aparece como texto literal no diagrama renderizado. Para quebrar linha dentro de um label, use `<br/>` (ex.: `A["Título<br/>Subtítulo"]`) ou divida o conteúdo em nós separados. O arquivo gravado deve conter quebras de linha reais, nunca sequências de escape.
+
 | Situação | Tipo Mermaid |
 |---|---|
 | Fluxo de requisição, pipeline de dados, processo com condições | `flowchart LR` ou `flowchart TD` |
