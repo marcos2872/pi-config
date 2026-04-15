@@ -77,7 +77,7 @@ Se `AGENTS.md` não existir, avise o usuário e sugira executar `/init` primeiro
 # Estrutura geral — use os caminhos declarados no AGENTS.md
 ls -la
 find . -maxdepth 3 -type f -not -path '*/.git/*' -not -path '*/node_modules/*' | sort
-ls .agents/agents/ .agents/skills/ 2>/dev/null
+ls agents/agents/ agents/skills/ 2>/dev/null
 ```
 
 Leia sempre os arquivos diretamente relevantes ao escopo do plano.

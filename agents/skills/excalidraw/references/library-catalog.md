@@ -9,7 +9,7 @@ script to incorporate any item into a diagram.
 
 ```bash
 # Listar itens disponíveis
-cd .agents/skills/excalidraw/references
+cd agents/skills/excalidraw/references
 uv run python extract_lib_item.py icons.excalidrawlib --list
 uv run python extract_lib_item.py system-design-template.excalidrawlib --list
 

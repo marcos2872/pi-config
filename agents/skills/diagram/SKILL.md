@@ -36,7 +36,7 @@ Siga esta ordem para **toda** tarefa de diagrama:
 
 ### Passo 1 — Carregar a skill `excalidraw`
 
-Leia o arquivo `.agents/skills/excalidraw/SKILL.md` com a ferramenta `read` **antes de qualquer ação**.
+Leia o arquivo `agents/skills/excalidraw/SKILL.md` com a ferramenta `read` **antes de qualquer ação**.
 Nunca pule este passo — a skill contém os padrões visuais, paleta de cores e o
 workflow de render obrigatório.
 
@@ -125,7 +125,7 @@ Escreva o arquivo com a ferramenta `write` + `edit` incremental, uma seção por
 Após gerar o diagrama e após cada correção significativa, execute:
 
 ```bash
-cd .agents/skills/excalidraw/references && uv run python render_excalidraw.py <caminho-do-arquivo.excalidraw>
+cd agents/skills/excalidraw/references && uv run python render_excalidraw.py <caminho-do-arquivo.excalidraw>
 ```
 
 Em seguida, use a ferramenta `read` para visualizar o PNG gerado.
@@ -204,7 +204,7 @@ Ao concluir, informe:
 - **`roughness: 0`** para diagramas técnicos/profissionais
 - **`opacity: 100`** em todos os elementos — nunca use transparência
 - **Menos de 30%** dos elementos de texto devem estar dentro de containers
-- **Cores exclusivamente** da paleta em `.agents/skills/excalidraw/references/color-palette.md`
+- **Cores exclusivamente** da paleta em `agents/skills/excalidraw/references/color-palette.md`
 - **Nunca invente cores** — use as semânticas definidas na paleta
 - **Setas conectam elementos** — posição sozinha não mostra relacionamento
 

@@ -45,10 +45,10 @@ Mapeie o pedido do usuário para uma categoria e leia a skill correspondente:
 
 | Pedido | Categoria | Skill a ler |
 |---|---|---|
-| ADR, decisão de arquitetura, inventário de serviços | Arquitetura | `.agents/skills/doc-architecture/SKILL.md` |
-| Endpoints, rotas de API, models de banco, migrations, fluxo de dados | Backend | `.agents/skills/doc-backend/SKILL.md` |
-| Componentes React, páginas, rotas frontend, estado global | Frontend | `.agents/skills/doc-frontend/SKILL.md` |
-| Schema de banco, relacionamentos entre tabelas | Banco de dados | `.agents/skills/doc-db/SKILL.md` |
+| ADR, decisão de arquitetura, inventário de serviços | Arquitetura | `agents/skills/doc-architecture/SKILL.md` |
+| Endpoints, rotas de API, models de banco, migrations, fluxo de dados | Backend | `agents/skills/doc-backend/SKILL.md` |
+| Componentes React, páginas, rotas frontend, estado global | Frontend | `agents/skills/doc-frontend/SKILL.md` |
+| Schema de banco, relacionamentos entre tabelas | Banco de dados | `agents/skills/doc-db/SKILL.md` |
 
 Leia a skill com `read` antes de qualquer ação de escrita.
 Nunca pule este passo — a skill contém os templates e convenções corretas.

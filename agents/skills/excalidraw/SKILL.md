@@ -470,7 +470,7 @@ Two libraries are available in `references/`. **Read `references/library-catalog
 
 **Step 1 -- Extract the elements:**
 ```bash
-cd .agents/skills/excalidraw/references && uv run python extract_lib_item.py icons.excalidrawlib <name> --x <X> --y <Y> --width 80
+cd agents/skills/excalidraw/references && uv run python extract_lib_item.py icons.excalidrawlib <name> --x <X> --y <Y> --width 80
 ```
 
 **Step 2 -- Copy the output** (a JSON array) and insert every element into the diagram's `elements[]` array using `edit`.
@@ -513,7 +513,7 @@ You cannot judge a diagram from JSON alone. After generating or editing the Exca
 ### How to Render
 
 ```bash
-cd .agents/skills/excalidraw/references && uv run python render_excalidraw.py "$(pwd)/<path-to-file.excalidraw>"
+cd agents/skills/excalidraw/references && uv run python render_excalidraw.py "$(pwd)/<path-to-file.excalidraw>"
 ```
 
 > **Use sempre caminho absoluto** para o arquivo `.excalidraw` -- o script roda a partir do diretorio `references/`, entao caminhos relativos como `docs/diagrams/foo.excalidraw` serao resolvidos incorretamente. A substituicao `$(pwd)/` garante o caminho absoluto a partir da raiz do projeto.
@@ -567,7 +567,7 @@ The loop is done when:
 ### First-Time Setup
 If the render script hasn't been set up yet:
 ```bash
-cd .agents/skills/excalidraw/references
+cd agents/skills/excalidraw/references
 uv sync
 uv run playwright install chromium
 ```

@@ -1,7 +1,7 @@
 /**
  * Agent Switcher Extension
  *
- * Carrega dinamicamente todas as skills de .agents/agents/ e permite alternar
+ * Carrega dinamicamente todas as skills de agents/agents/ e permite alternar
  * entre elas via Alt+A ou /agent. O ciclo nunca inclui "sem agente".
  *
  * Agentes somente-leitura (sem bash, write/edit bloqueados):
@@ -24,8 +24,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-/** Diretório global de agentes — ~/.agents/agents (via symlink para o pi-config). */
-const GLOBAL_AGENTS_DIR = join(homedir(), ".agents", "agents");
+/** Diretório global de agentes — ~/agents/agents (via symlink para o pi-config). */
+const GLOBAL_AGENTS_DIR = join(homedir(), "agents", "agents");
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -169,7 +169,7 @@ function parseSkillFrontmatter(raw: string): {
 }
 
 function loadAllSkills(cwd: string): Skill[] {
-  const localDir = join(cwd, ".agents", "agents");
+  const localDir = join(cwd, "agents", "agents");
   const skillsDir = existsSync(localDir) ? localDir : GLOBAL_AGENTS_DIR;
   if (!existsSync(skillsDir)) return [];
 
@@ -277,7 +277,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
 
   async function showAgentSelector(ctx: ExtensionContext): Promise<void> {
     if (skills.length === 0) {
-      ctx.ui.notify("Nenhuma skill encontrada em .agents/agents/", "warning");
+      ctx.ui.notify("Nenhuma skill encontrada em agents/agents/", "warning");
       return;
     }
 
@@ -353,7 +353,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
   });
 
   pi.registerCommand("agent-reload", {
-    description: "Recarrega skills de .agents/agents/ sem reiniciar o pi",
+    description: "Recarrega skills de agents/agents/ sem reiniciar o pi",
     handler: async (_args, ctx) => {
       skills = loadAllSkills(ctx.cwd);
       if (activeSkill) {

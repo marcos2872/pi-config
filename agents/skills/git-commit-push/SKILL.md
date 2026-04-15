@@ -82,7 +82,7 @@ Use the directory structure declared in the project's **AGENTS.md** as the prima
 | Frontend hooks | `hooks` |
 | Tests | `tests` |
 | CI/CD (`.github/workflows/`, `Dockerfile`) | `ci` |
-| Agent configs (`.agents/**`) | `agents` |
+| Agent configs (`agents/**`) | `agents` |
 | Documentation (`docs/**`) | `docs` |
 | Changes in multiple unrelated areas | use the dominant one, or **omit scope** |
 

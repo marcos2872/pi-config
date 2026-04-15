@@ -26,8 +26,8 @@
 ## Estrutura de Diretórios
 
 - **Extensões pi:** `.pi/extensions/`
-- **Agentes:** `.agents/agents/`
-- **Skills:** `.agents/skills/`
+- **Agentes:** `agents/agents/`
+- **Skills:** `agents/skills/`
 - **Planos:** `.pi/plans/`
 - **Documentação:** `docs/`
 - **Testes:** (não encontrado — validação é manual/interativa no runtime do pi)
@@ -37,12 +37,12 @@
 ### Extensões (`.pi/extensions/`)
 
 - **`agent-switcher.ts`** — Troca de agente via `Alt+A` ou `/agent`; controla permissões de ferramentas por modo (somente-leitura, planejamento, auditoria, escrita completa)
-- **`agents-resolver.ts`** — Registra os caminhos `.agents/agents/` e `.agents/skills/` para que o pi descubra agentes e skills via `resources_discover`
+- **`agents-resolver.ts`** — Registra os caminhos `agents/agents/` e `agents/skills/` para que o pi descubra agentes e skills via `resources_discover`
 - **`init-agents.ts`** — Registra o comando `/init`; spawna sub-agente LLM que analisa o projeto e escreve o `AGENTS.md` com feedback visual em tempo real
 - **`openrouter.ts`** — Integra o provedor OpenRouter, lendo a API key de `.env` local ou da variável de ambiente `OPENROUTER_API_KEY`
 - **`rtk.ts`** — Integra o RTK (Rust Token Killer) para reduzir consumo de tokens em 60-90%; intercepta chamadas bash via `rtk rewrite` e substitui `grep`/`find`/`ls` por versões comprimidas
 
-### Agentes (`.agents/agents/`)
+### Agentes (`agents/agents/`)
 
 - **`ask/`** — Agente somente-leitura; responde perguntas sobre o projeto sem modificar nada
 - **`build/`** — Agente de código; implementa funcionalidades, corrige bugs e refatora com escrita completa
@@ -53,7 +53,7 @@
 - **`quality/`** — Auditor de qualidade; verifica conformidade com lint, tipos e testes declarados no AGENTS.md
 - **`test/`** — Engenheiro de testes; cria, mantém e executa testes automatizados
 
-### Skills (`.agents/skills/`)
+### Skills (`agents/skills/`)
 
 - **`diagram/`** — Criação e validação de diagramas Excalidraw (C4, ER, fluxos de dados, árvores de componentes)
 - **`doc-architecture/`** — Produz ADRs no formato MADR compacto e tabelas de inventário de serviços
@@ -93,7 +93,7 @@ Antes de commitar, carregue a skill de commit:
 /skill:git-commit-push
 ```
 
-Ou siga diretamente as regras em `.agents/skills/git-commit-push/SKILL.md`.
+Ou siga diretamente as regras em `agents/skills/git-commit-push/SKILL.md`.
 
 ## Agentes e Skills
 
