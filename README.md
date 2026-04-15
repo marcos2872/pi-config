@@ -94,6 +94,8 @@ O `/init` detecta `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `pom
 
 Este repositório foi desenhado para funcionar como configuração global do pi — disponível em todos os projetos sem nenhuma configuração por repositório.
 
+A abordagem usa **symlinks**: os arquivos continuam versionados aqui, e o pi os encontra nos caminhos globais esperados. Qualquer `git pull` neste repositório reflete imediatamente em todos os projetos.
+
 ### 1. Instalar o pi
 
 ```bash
@@ -103,24 +105,51 @@ npm install -g @mariozechner/pi-coding-agent
 ### 2. Clonar este repositório
 
 ```bash
-git clone https://github.com/marcos2872/pi-config ~/pi-config
+git clone https://github.com/marcos2872/pi-config ~/Projetos/pi-config
 ```
 
-### 3. Configurar o settings.json global
+> Ajuste o caminho de destino conforme preferir — use o mesmo nos próximos passos.
 
-Edite (ou crie) `~/.pi/agent/settings.json` adicionando os três campos abaixo — ajuste o caminho se clonou em outro diretório:
+### 3. Criar os symlinks globais
 
-```json
-{
-  "extensions": ["~/pi-config/.pi/extensions"],
-  "skills":     ["~/pi-config/.agents/skills"],
-  "prompts":    ["~/pi-config/.agents/prompts"]
-}
+```bash
+# Extensões TypeScript → ~/.pi/agent/extensions/
+ln -s ~/Projetos/pi-config/.pi/extensions ~/.pi/agent/extensions
+
+# Agentes e skills → ~/.agents/ (descoberto automaticamente pelo pi)
+ln -s ~/Projetos/pi-config/.agents ~/.agents
+
+# AGENTS.md global → carregado pelo pi em qualquer projeto
+ln -s ~/Projetos/pi-config/AGENTS.md ~/.pi/agent/AGENTS.md
 ```
 
-As demais configurações existentes (provider, model, theme…) são preservadas — apenas adicione as três linhas.
+### 4. Atualizar o settings.json global (sem apagar configs existentes)
 
-### 4. Instalar o RTK (opcional, recomendado)
+O arquivo `~/.pi/agent/settings.json` pode já conter configurações de provider, modelo, tema etc. O comando abaixo **mescla** os novos campos sem sobrescrever o que já existe:
+
+```bash
+SETTINGS=~/.pi/agent/settings.json
+REPO=~/Projetos/pi-config
+
+# Cria o arquivo se não existir
+[ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
+
+# Merge: mantém chaves existentes e adiciona/atualiza skills e prompts
+node -e "
+  const fs = require('fs');
+  const current = JSON.parse(fs.readFileSync('$SETTINGS', 'utf8'));
+  const patch = {
+    skills:  ['$REPO/.agents/agents', '$REPO/.agents/skills'],
+    prompts: ['$REPO/.agents/prompts']
+  };
+  fs.writeFileSync('$SETTINGS', JSON.stringify({ ...current, ...patch }, null, 2));
+  console.log('settings.json atualizado.');
+"
+```
+
+> **Por que só `skills` e `prompts`?** As extensões são descobertas automaticamente via o symlink `~/.pi/agent/extensions/`. O `~/.agents/skills/` também é descoberto automaticamente pelo pi, mas incluímos `agents/` e `skills/` explicitamente em `skills` para que o `agents-resolver.ts` registre ambos os caminhos via `resources_discover`.
+
+### 5. Instalar o RTK (opcional, recomendado)
 
 ```bash
 # macOS
@@ -130,7 +159,7 @@ brew install rtk
 curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
 ```
 
-### 5. Recarregar as extensões
+### 6. Recarregar as extensões
 
 Abra o pi em qualquer projeto e execute:
 
@@ -138,7 +167,7 @@ Abra o pi em qualquer projeto e execute:
 /reload
 ```
 
-As extensões, skills e prompts deste repositório estarão disponíveis globalmente. Os agentes (`/agent`, `Alt+A`) carregam os arquivos de `~/.pi/agent/settings.json` e fazem fallback para os agentes globais quando o projeto não tem `.agents/agents/` próprio.
+As extensões, skills e prompts deste repositório estarão disponíveis globalmente. Os agentes (`/agent`, `Alt+A`) fazem fallback para `~/.agents/agents/` quando o projeto não tem `.agents/agents/` próprio.
 
 ### Como usar em um projeto
 

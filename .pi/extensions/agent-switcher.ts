@@ -21,10 +21,11 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
-/** Diretório global de agentes — derivado do local da própria extensão. */
-const GLOBAL_AGENTS_DIR = resolve(__dirname, "..", "..", ".agents", "agents");
+/** Diretório global de agentes — ~/.agents/agents (via symlink para o pi-config). */
+const GLOBAL_AGENTS_DIR = join(homedir(), ".agents", "agents");
 import type {
   ExtensionAPI,
   ExtensionContext,
