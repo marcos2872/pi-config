@@ -36,11 +36,7 @@ Para controle de modo de operação, nada estruturado. Ou o agente tinha permiss
 
 ### RTK: compressão transparente no hook de bash
 
-O [RTK (Rust Token Killer)](https://www.rtk-ai.app/) comprime a saída de comandos de terminal antes de enviar ao LLM. A integração com o pi é uma extensão TypeScript com um hook `tool_call` que intercepta cada comando bash antes de executar e passa pelo `rtk rewrite`. O RTK reescreve automaticamente chamadas de `grep`, `find` e `ls` para versões comprimidas — sem o agente precisar saber disso.
-
-O `read` nativo do pi fica fora da interceptação intencionalmente. RTK trunca arquivos de forma opaca, o que prejudicaria leituras de código onde o agente precisa do conteúdo completo.
-
-O resultado depois de 367 comandos:
+O [RTK (Rust Token Killer)](https://www.rtk-ai.app/) comprime a saída de comandos de terminal antes de enviar ao LLM. Depois de 367 comandos:
 
 | Métrica | Valor |
 |---|---|
@@ -49,6 +45,8 @@ O resultado depois de 367 comandos:
 | Economia | 40.9% |
 
 Os maiores ganhos individuais: `rtk cargo test` (98.5%), `rtk git commit` (98.2%), `rtk ls` (80.9%). Projetos Rust e Go têm o maior ganho — saídas de compilação e teste são enormes.
+
+O mecanismo: a integração intercepta cada comando bash antes de executar e passa pelo `rtk rewrite`, que reescreve chamadas de `grep`, `find` e `ls` para versões comprimidas — sem o agente precisar saber disso. O `read` nativo do pi fica fora da interceptação intencionalmente: RTK trunca arquivos de forma opaca, o que prejudicaria leituras de código onde o agente precisa do conteúdo completo.
 
 **Estatísticas globais acumuladas:**
 
@@ -100,8 +98,9 @@ curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
 
 ```bash
 git clone https://github.com/marcos2872/pi-config
-# Configure o pi para apontar para o diretório clonado nas preferências
 ```
+
+Siga os passos em [github.com/marcos2872/pi-config/blob/main/docs/configure.md](https://github.com/marcos2872/pi-config/blob/main/docs/configure.md) para criar os symlinks e atualizar o `settings.json` global.
 
 **Comandos disponíveis após carregar:**
 

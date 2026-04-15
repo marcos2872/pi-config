@@ -54,7 +54,22 @@ node -e "
 
 > As extensões são carregadas via symlink (passo 3), por isso não precisam de entrada no `settings.json`.
 
-## 5. Instalar o RTK (opcional, recomendado)
+## 5. Criar o symlink dos agentes globais
+
+O `agent-switcher` procura os agentes primeiro em `{cwd}/agents/agents/` (local ao projeto) e, se não encontrar, cai para `~/agents/agents/`. Sem esse symlink, o pi exibe o warning abaixo ao abrir em qualquer projeto sem pasta local de agentes:
+
+```
+Warning: agent-switcher: nenhuma skill encontrada (local nem global)
+```
+
+Crie o symlink apontando para a pasta `agents/` do repositório:
+
+```bash
+# Substitua ~/pi-config pelo caminho onde você clonou o repositório
+ln -s ~/pi-config/agents ~/agents
+```
+
+## 6. Instalar o RTK (opcional, recomendado)
 
 Reduz o consumo de tokens em ~40% interceptando saídas de `grep`, `find` e `ls`.
 
@@ -66,7 +81,7 @@ brew install rtk
 curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh
 ```
 
-## 6. Recarregar
+## 7. Recarregar
 
 Abra o pi em qualquer projeto e execute:
 
