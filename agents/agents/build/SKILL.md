@@ -55,7 +55,3 @@ Se `AGENTS.md` não existir no projeto, peça ao usuário para executar `/init` 
 - Segredos ou credenciais hardcoded → nunca
 - Sem tratamento de erro em I/O externo → adicionar
 - Testes existentes quebrando → corrigir antes de concluir
-
-## Commit
-
-Após concluir, siga a skill `git-commit-push` para o fluxo completo de commit → push → PR.

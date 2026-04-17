@@ -120,8 +120,8 @@ Use os checklists correspondentes à linguagem detectada no AGENTS.md.
 ### Python
 
 **Tamanho e complexidade**
-- Funções com mais do que o limite do AGENTS.md (padrão: 40 linhas) → **AVISO**
-- Arquivos com mais do que o limite do AGENTS.md (padrão: 300 linhas) → **AVISO**
+- Funções com mais do que o limite do AGENTS.md (padrão: 150 linhas) → **AVISO**
+- Arquivos com mais do que o limite do AGENTS.md (padrão: 700 linhas) → **AVISO**
 - Aninhamento > 3 níveis → **AVISO**
 
 **Type hints**

@@ -113,8 +113,8 @@ Preencha cada campo com o que encontrar — não invente nada.
 
 ## Convenções de Código
 
-- **Tamanho máximo de função:** 40 linhas
-- **Tamanho máximo de arquivo:** 300 linhas
+- **Tamanho máximo de função:** 150 linhas
+- **Tamanho máximo de arquivo:** 700 linhas
 - **Aninhamento máximo:** 3 níveis
 - **Docstrings / comentários:** Português brasileiro
 - **Identificadores (variáveis, funções, classes):** Inglês
