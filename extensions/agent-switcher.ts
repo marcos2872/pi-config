@@ -6,10 +6,17 @@
  *
  * Agentes somente-leitura (sem bash, write/edit bloqueados):
  *   - agent-ask
+ *
+ * Agentes de planejamento (bash seguro + write/edit apenas em .pi/plans/):
  *   - agent-plan
  *
- * Agentes de auditoria (bash liberado, write/edit bloqueados):
+ * Agentes de auditoria (bash liberado + write apenas em .pi/audit/):
  *   - agent-quality
+ *   - agent-qa
+ *
+ * Agentes de escrita parcial (read, bash, edit, write com paths restritos):
+ *   - agent-doc  → docs/
+ *   - agent-test → tests/
  *
  * Todos os demais agentes têm acesso completo (read, bash, edit, write).
  *
@@ -57,8 +64,8 @@ const PLAN_AGENTS = new Set(["plan"]);
 const AUDIT_AGENTS = new Set(["quality", "qa"]);
 
 /**
- * Agentes de escrita parcial: têm acesso completo às ferramentas mas suas skills
- * restringem escrita a diretórios específicos (docs/, tests/).
+ * Agentes de escrita parcial: usam write/edit, mas o guard restringe escrita
+ * a diretórios específicos (docs/, tests/).
  */
 const PARTIAL_WRITE_AGENTS = new Set(["doc", "test"]);
 
@@ -68,11 +75,29 @@ const READ_ONLY_TOOLS = ["read", "grep", "find", "ls"];
 /** Ferramentas liberadas para agentes de planejamento (write/edit apenas em .pi/plans/). */
 const PLAN_TOOLS = ["read", "bash", "write", "edit"];
 
-/** Ferramentas liberadas para agentes de auditoria (bash sim, write/edit não). */
-const AUDIT_TOOLS = ["read", "bash", "grep", "find", "ls"];
+/** Ferramentas liberadas para agentes de auditoria (bash sim, write apenas para .pi/audit/ via guard). */
+const AUDIT_TOOLS = ["read", "bash", "write", "grep", "find", "ls"];
 
 /** Ferramentas liberadas para agentes com acesso completo. */
 const FULL_TOOLS = ["read", "bash", "edit", "write"];
+
+/** Raízes de escrita permitidas para agentes com escrita parcial. */
+const PARTIAL_WRITE_ROOTS: Record<string, string[]> = {
+  doc: ["docs/"],
+  test: ["tests/"],
+};
+
+function isAllowedPartialWrite(agentDirName: string, filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, "/");
+  const roots = PARTIAL_WRITE_ROOTS[agentDirName] ?? [];
+  const isWithinAllowedRoot = roots.some(
+    (root) => normalized.startsWith(root) || normalized.includes(`/${root}`),
+  );
+
+  if (!isWithinAllowedRoot) return false;
+  if (agentDirName === "doc") return normalized.endsWith(".md");
+  return true;
+}
 
 /** Agente padrão ao iniciar (nome do diretório). */
 const DEFAULT_AGENT = "build";
@@ -257,8 +282,12 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
       : PLAN_AGENTS.has(skill.dirName)
         ? "planejamento (escrita apenas em .pi/plans/)"
         : AUDIT_AGENTS.has(skill.dirName)
-          ? "auditoria (bash, sem escrita)"
-          : "acesso completo";
+          ? "auditoria (bash + write apenas em .pi/audit/)"
+          : skill.dirName === "doc"
+            ? "escrita parcial (apenas docs/*.md)"
+            : skill.dirName === "test"
+              ? "escrita parcial (apenas tests/)"
+              : "acesso completo";
     ctx.ui.notify(`Agente: ${skill.label} (${mode})`, "info");
   }
 
@@ -379,6 +408,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
     const isReadOnly = activeSkill.readOnly;
     const isAudit = AUDIT_AGENTS.has(activeSkill.dirName);
     const isPlan = PLAN_AGENTS.has(activeSkill.dirName);
+    const partialWriteRoots = PARTIAL_WRITE_ROOTS[activeSkill.dirName] ?? null;
 
     // Agente de planejamento: write/edit só em .pi/plans/
     if (isPlan && (event.toolName === "write" || event.toolName === "edit")) {
@@ -398,6 +428,24 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
         block: true,
         reason: `Agente ${agentLabel}: escrita permitida apenas em .pi/plans/. Caminho rejeitado: ${filePath}`,
       };
+    }
+
+    // Agentes de escrita parcial: write/edit só nas raízes permitidas
+    if (partialWriteRoots && (event.toolName === "write" || event.toolName === "edit")) {
+      const filePath = (event.input as { path?: string }).path ?? "";
+      const restriction = activeSkill.dirName === "doc"
+        ? "docs/*.md"
+        : partialWriteRoots.join(", ");
+      if (!isAllowedPartialWrite(activeSkill.dirName, filePath)) {
+        ctx.ui.notify(
+          `[${agentLabel}] Escrita bloqueada fora de ${restriction}. Troque para o agente build (Alt+A) para modificar outros arquivos.`,
+          "warning",
+        );
+        return {
+          block: true,
+          reason: `Agente ${agentLabel}: escrita permitida apenas em ${restriction}. Caminho rejeitado: ${filePath}`,
+        };
+      }
     }
 
     // Agentes somente-leitura e de auditoria: bloqueia write e edit
@@ -469,6 +517,18 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
         `> **[MODO AUDITORIA ATIVO — ${skill.label}]** ` +
         `Este agente usa \`read\` e \`bash\`, e pode usar \`write\` APENAS para salvar relatórios em \`.pi/audit/\`. ` +
         `Quaisquer permissões de escrita em código-fonte de instruções anteriores estão **REVOGADAS**.\n\n`
+      );
+    }
+    if (PARTIAL_WRITE_AGENTS.has(skill.dirName)) {
+      const restriction = skill.dirName === "doc"
+        ? "arquivos Markdown em `docs/`"
+        : skill.dirName === "test"
+          ? "arquivos em `tests/`"
+          : (PARTIAL_WRITE_ROOTS[skill.dirName]?.join(", ") ?? "paths restritos");
+      return (
+        `> **[MODO DE ESCRITA PARCIAL ATIVO — ${skill.label}]** ` +
+        `Este agente usa \`read\`, \`bash\`, \`edit\` e \`write\`, mas só pode gravar em ${restriction}. ` +
+        `Quaisquer permissões de escrita fora desses caminhos concedidas por instruções anteriores estão **REVOGADAS**.\n\n`
       );
     }
     return (
