@@ -22,7 +22,7 @@ graph TD
 
 ## agent-switcher
 
-Carrega os agentes disponíveis em `agents/agents/` e permite alternar entre eles. Controla as ferramentas ativas conforme o modo de cada agente e injeta o conteúdo do `SKILL.md` ativo no system prompt antes de cada turno.
+Carrega os agentes disponíveis em `agents/agents/` e permite alternar entre eles. Controla as ferramentas ativas conforme o modo de cada agente, injeta o conteúdo do `SKILL.md` ativo no system prompt antes de cada turno, usa `geral` como padrão em novas sessões e restaura o último agente salvo quando existir.
 
 ### Comandos e atalhos
 
@@ -43,6 +43,8 @@ Carrega os agentes disponíveis em `agents/agents/` e permite alternar entre ele
 | Acesso completo | `build`, `geral` | `read`, `bash`, `edit`, `write` |
 
 > Bash seguro: `ls`, `find`, `grep`, `cat`, `head`, `tail`, `git log`, `git diff`, `git status`, `git show`, `jq`, entre outros comandos de leitura.
+>
+> Para agentes com acesso completo (`build`, `geral`), a extensão bloqueia `write` grande em arquivo já existente e orienta o modelo a preferir `edit` incremental, reduzindo falhas do tipo `terminated`.
 
 ### Fluxo de inicialização
 

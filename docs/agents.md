@@ -10,12 +10,14 @@ O `agent-switcher` carrega os agentes automaticamente e o `agents-resolver` os r
 
 Troque de agente com **Alt+A** (ciclo) ou **`/agent`** (seletor visual).
 
+> Em sessões novas, o agente padrão é **`geral`**. Se houver estado salvo, o `agent-switcher` restaura o último agente usado.
+
 | Agente | Modo | Descrição |
 |---|---|---|
 | `ask` | somente-leitura | Responde perguntas sobre o projeto sem modificar nada |
 | `build` | escrita completa | Implementa funcionalidades, corrige bugs e refatora |
 | `doc` | escrita em `docs/` | Cria e atualiza ADRs, tabelas de API, diagramas Mermaid |
-| `geral` | escrita completa | Propósito geral sem restrições de domínio |
+| `geral` | escrita completa | Propósito geral sem restrições de domínio; agente padrão em novas sessões |
 | `plan` | escrita em `.pi/plans/` | Planeja funcionalidades antes de implementar |
 | `qa` | auditoria | Analisa bugs, edge cases e vulnerabilidades de segurança |
 | `quality` | auditoria | Verifica conformidade com lint, tipos e convenções do projeto |

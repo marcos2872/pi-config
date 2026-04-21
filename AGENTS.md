@@ -41,7 +41,7 @@ As extensões são carregadas diretamente pelo pi via `jiti` — não há `packa
 
 ### Extensões (`extensions/`)
 
-- **`extensions/agent-switcher.ts`** — Troca de agente via `Alt+A` ou `/agent`; controla permissões de ferramentas por modo (somente-leitura, planejamento, auditoria, escrita parcial, escrita completa); restaura agente ativo entre sessões
+- **`extensions/agent-switcher.ts`** — Troca de agente via `Alt+A` ou `/agent`; controla permissões de ferramentas por modo (somente-leitura, planejamento, auditoria, escrita parcial, escrita completa); usa `geral` como agente padrão em novas sessões, restaura o agente ativo entre sessões e bloqueia `write` grande em arquivo existente para reduzir erros `terminated`
 - **`extensions/agents-resolver.ts`** — Registra `agents/agents/` e `agents/skills/` para descoberta nativa de agentes e skills pelo pi via `resources_discover`; prioriza paths locais do projeto com fallback para `~/agents`
 - **`extensions/init-agents.ts`** — Registra o comando `/init`; spawna sub-agente LLM com ferramentas de leitura + escrita que analisa o projeto e gera o `AGENTS.md` com feedback visual em tempo real (spinner + log de passos)
 - **`extensions/openrouter.ts`** — Integra o provedor OpenRouter; lê a API key de `.env` local (raiz do projeto) ou da variável de ambiente `OPENROUTER_API_KEY`

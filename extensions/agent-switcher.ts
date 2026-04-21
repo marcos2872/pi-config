@@ -20,7 +20,7 @@
  *
  * Todos os demais agentes têm acesso completo (read, bash, edit, write).
  *
- * Por padrão, o agente "agent-build" é ativado ao iniciar.
+ * Por padrão, o agente "agent-geral" é ativado ao iniciar.
  *
  * Atalhos:
  *   Alt+A  → cicla entre todos os agentes carregados
@@ -29,7 +29,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 
 /** Diretório global de agentes — ~/agents/agents (via symlink para o pi-config). */
 const GLOBAL_AGENTS_DIR = join(homedir(), "agents", "agents");
@@ -100,7 +100,30 @@ function isAllowedPartialWrite(agentDirName: string, filePath: string): boolean 
 }
 
 /** Agente padrão ao iniciar (nome do diretório). */
-const DEFAULT_AGENT = "build";
+const DEFAULT_AGENT = "geral";
+
+/** Limites para bloquear rewrites grandes em arquivos existentes. */
+const LARGE_WRITE_CHAR_THRESHOLD = 12_000;
+const LARGE_WRITE_LINE_THRESHOLD = 220;
+
+function resolveToolPath(cwd: string, filePath: string): string {
+  return isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
+}
+
+function shouldBlockLargeRewrite(
+  cwd: string,
+  filePath: string,
+  content: string,
+): boolean {
+  if (!filePath || !content) return false;
+  if (!existsSync(resolveToolPath(cwd, filePath))) return false;
+
+  const lineCount = content.split("\n").length;
+  return (
+    content.length >= LARGE_WRITE_CHAR_THRESHOLD ||
+    lineCount >= LARGE_WRITE_LINE_THRESHOLD
+  );
+}
 
 /** Cores do status bar, rotacionadas por índice de agente. */
 const COLOR_TOKENS = [
@@ -409,6 +432,8 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
     const isAudit = AUDIT_AGENTS.has(activeSkill.dirName);
     const isPlan = PLAN_AGENTS.has(activeSkill.dirName);
     const partialWriteRoots = PARTIAL_WRITE_ROOTS[activeSkill.dirName] ?? null;
+    const hasFullWriteAccess =
+      !isReadOnly && !isAudit && !isPlan && !partialWriteRoots;
 
     // Agente de planejamento: write/edit só em .pi/plans/
     if (isPlan && (event.toolName === "write" || event.toolName === "edit")) {
@@ -421,7 +446,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
         return; // escrita autorizada para arquivos de plano
       }
       ctx.ui.notify(
-        `[${agentLabel}] Escrita bloqueada fora de .pi/plans/. Troque para o agente build (Alt+A) para modificar código.`,
+        `[${agentLabel}] Escrita bloqueada fora de .pi/plans/. Troque para o agente geral ou build (Alt+A) para modificar código.`,
         "warning",
       );
       return {
@@ -438,7 +463,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
         : partialWriteRoots.join(", ");
       if (!isAllowedPartialWrite(activeSkill.dirName, filePath)) {
         ctx.ui.notify(
-          `[${agentLabel}] Escrita bloqueada fora de ${restriction}. Troque para o agente build (Alt+A) para modificar outros arquivos.`,
+          `[${agentLabel}] Escrita bloqueada fora de ${restriction}. Troque para o agente geral ou build (Alt+A) para modificar outros arquivos.`,
           "warning",
         );
         return {
@@ -463,12 +488,30 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
           }
         }
         ctx.ui.notify(
-          `[${agentLabel}] Escrita bloqueada. Troque para o agente build (Alt+A) para modificar arquivos.`,
+          `[${agentLabel}] Escrita bloqueada. Troque para o agente geral ou build (Alt+A) para modificar arquivos.`,
           "warning",
         );
         return {
           block: true,
-          reason: `Agente ${agentLabel}: ferramenta "${event.toolName}" bloqueada. Use o agente build para modificações.`,
+          reason: `Agente ${agentLabel}: ferramenta "${event.toolName}" bloqueada. Use o agente geral ou build para modificações.`,
+        };
+      }
+    }
+
+    // Agentes com acesso completo: evita rewrites grandes em arquivos existentes
+    if (hasFullWriteAccess && event.toolName === "write") {
+      const filePath = (event.input as { path?: string }).path ?? "";
+      const content = (event.input as { content?: string }).content ?? "";
+      if (shouldBlockLargeRewrite(ctx.cwd, filePath, content)) {
+        ctx.ui.notify(
+          `[${agentLabel}] Rewrite grande bloqueado em arquivo existente para evitar \"terminated\". Prefira \`edit\` incremental.`,
+          "warning",
+        );
+        return {
+          block: true,
+          reason:
+            `Agente ${agentLabel}: write grande em arquivo existente bloqueado para reduzir falhas \"terminated\". ` +
+            `Use edit em etapas menores. Caminho: ${filePath}`,
         };
       }
     }
@@ -483,7 +526,7 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
         );
         return {
           block: true,
-          reason: `Agente ${agentLabel}: comando bash não permitido (modifica ou executa side-effects). Use o agente build.`,
+          reason: `Agente ${agentLabel}: comando bash não permitido (modifica ou executa side-effects). Use o agente geral ou build.`,
         };
       }
     }
@@ -533,7 +576,8 @@ export default function agentSwitcherExtension(pi: ExtensionAPI): void {
     }
     return (
       `> **[MODO DE ESCRITA COMPLETO ATIVO — ${skill.label}]** ` +
-      `Este agente tem permissão total para usar \`read\`, \`bash\`, \`edit\` e \`write\`. ` +
+      `Este agente tem permissão total para usar \`read\`, \`bash\`, \`edit\` e \`write\`, ` +
+      `mas deve **preferir \`edit\` em arquivos existentes** e reservar \`write\` para arquivos novos ou reescritas pequenas/intencionais. ` +
       `Quaisquer restrições de escrita de instruções anteriores estão **REVOGADAS**.\n\n`
     );
   }
