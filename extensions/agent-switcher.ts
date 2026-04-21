@@ -102,9 +102,9 @@ function isAllowedPartialWrite(agentDirName: string, filePath: string): boolean 
 /** Agente padrão ao iniciar (nome do diretório). */
 const DEFAULT_AGENT = "geral";
 
-/** Limites para bloquear rewrites grandes em arquivos existentes. */
-const LARGE_WRITE_CHAR_THRESHOLD = 12_000;
-const LARGE_WRITE_LINE_THRESHOLD = 220;
+/** Limites para bloquear apenas rewrites realmente grandes em arquivos existentes. */
+const LARGE_WRITE_CHAR_THRESHOLD = 40_000;
+const LARGE_WRITE_LINE_THRESHOLD = 600;
 
 function resolveToolPath(cwd: string, filePath: string): string {
   return isAbsolute(filePath) ? filePath : resolve(cwd, filePath);
