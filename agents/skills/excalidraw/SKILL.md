@@ -457,55 +457,6 @@ See `references/element-templates.md` for copy-paste JSON templates for each ele
 
 ---
 
-## Icon & Template Libraries (use automatically)
-
-Two libraries are available in `references/`. **Read `references/library-catalog.md` at the start of any technical diagram** -- it lists all 65 icons and 8 system-design templates and the rules for when to use each one automatically.
-
-| Library file | Contents |
-|---|---|
-| `references/icons.excalidrawlib` | 65 icons: languages (python, react, node, go...), tools (jest, vite...), UI actions (cloud, upload, sql, password...), file types |
-| `references/system-design-template.excalidrawlib` | 8 layout templates: steps, flow, table, code-block, system-diagram, note, separator, node-circle |
-
-### How to incorporate an icon
-
-**Step 1 -- Extract the elements:**
-```bash
-cd agents/skills/excalidraw/references && uv run python extract_lib_item.py icons.excalidrawlib <name> --x <X> --y <Y> --width 80
-```
-
-**Step 2 -- Copy the output** (a JSON array) and insert every element into the diagram's `elements[]` array using `edit`.
-
-**Step 3 -- Re-render** to confirm placement.
-
-### Usage rules
-
-- **Always apply automatically** -- do not ask the user. If a diagram node represents Python, React, a database, cloud, auth, etc., use the matching icon (see `library-catalog.md` for the full mapping table).
-- **Default size:** `--width 80`. Use `--width 60` for small inline markers.
-- **Icon style:** library icons use `roughness: 1` (hand-drawn). This is intentional -- do not override their `roughness` or `strokeWidth` values when inserting them.
-- **Placement:** place the icon above or to the left of the node label. Leave at least 10px gap between icon and label text.
-- **IDs:** the extraction script generates new unique IDs automatically -- never reuse IDs from the library file directly.
-
-### Quick reference -- most common icons
-
-| Concept | Icon name | Library |
-|---|---|---|
-| Python backend | `python` | icons |
-| Node.js backend | `node` | icons |
-| React frontend | `react` | icons |
-| Vue frontend | `vue` | icons |
-| Database / SQL | `sql` | icons |
-| Cloud service | `cloud` | icons |
-| Auth / JWT / security | `password` | icons |
-| TypeScript module | `typescript` | icons |
-| Message / webhook | `message` | icons |
-| File upload | `upload` | icons |
-| Search / index | `search` | icons |
-| Shell / CLI | `shell` | icons |
-| User->API->DB skeleton | `system-diagram` | system-design-template |
-| Numbered steps flow | `steps` | system-design-template |
-
----
-
 ## Render & Validate (MANDATORY)
 
 You cannot judge a diagram from JSON alone. After generating or editing the Excalidraw JSON, you MUST render it to PNG, view the image, and fix what you see -- in a loop until it's right. This is a core part of the workflow, not a final check.
@@ -605,11 +556,6 @@ uv run playwright install chromium
 18. **Roughness**: `roughness: 0` for clean/modern (unless hand-drawn style requested)
 19. **Opacity**: `opacity: 100` for all elements (no transparency)
 20. **Container ratio**: <30% of text elements should be inside containers
-
-### Libraries
-28. **Icons used**: Technical diagrams with technology/service nodes include icons from `icons.excalidrawlib`
-29. **Extraction script used**: Icons were added via `extract_lib_item.py` (not hand-crafted)
-30. **Icon placement**: Icons are placed above/beside the node label with >= 10px gap
 
 ### Visual Validation (Render Required)
 21. **Rendered to PNG**: Diagram has been rendered and visually inspected
