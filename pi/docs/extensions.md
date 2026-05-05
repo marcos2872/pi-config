@@ -1,12 +1,12 @@
 # Extensões
 
-As extensões ficam em `extensions/` na raiz do repositório e são carregadas pelo pi via symlink em `~/.pi/agent/extensions/`. Cada arquivo exporta `default function(pi: ExtensionAPI)` e é carregado pelo pi em runtime via `jiti` — sem etapa de compilação.
+As extensões ficam em `pi/extensions/` e são carregadas pelo pi via symlink em `~/.pi/agent/extensions/`. Cada arquivo exporta `default function(pi: ExtensionAPI)` e é carregado pelo pi em runtime via `jiti` — sem etapa de compilação.
 
 ```mermaid
 graph TD
     PI[pi runtime]
     EXT[~/.pi/agent/extensions/]
-    REPO[pi-config/extensions/]
+    REPO[pi-config/pi/extensions/]
 
     PI -->|auto-discover| EXT
     EXT -->|symlink| REPO
@@ -22,7 +22,7 @@ graph TD
 
 ## agent-switcher
 
-Carrega os agentes disponíveis em `agents/agents/` e permite alternar entre eles. Controla as ferramentas ativas conforme o modo de cada agente, injeta o conteúdo do `SKILL.md` ativo no system prompt antes de cada turno, usa `geral` como padrão em novas sessões e restaura o último agente salvo quando existir.
+Carrega os agentes disponíveis em `pi/agents/agents/` e permite alternar entre eles. Controla as ferramentas ativas conforme o modo de cada agente, injeta o conteúdo do `SKILL.md` ativo no system prompt antes de cada turno, usa `geral` como padrão em novas sessões e restaura o último agente salvo quando existir.
 
 ### Comandos e atalhos
 

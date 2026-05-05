@@ -26,7 +26,7 @@ Aponte `~/.pi/agent/extensions/` para a pasta `extensions/` do repositório:
 
 ```bash
 # Substitua ~/pi-config pelo caminho onde você clonou o repositório
-ln -s ~/pi-config/extensions ~/.pi/agent/extensions
+ln -s ~/pi-config/pi/extensions ~/.pi/agent/extensions
 ```
 
 ## 4. Atualizar o settings.json global
@@ -44,8 +44,8 @@ node -e "
   const fs = require('fs');
   const current = JSON.parse(fs.readFileSync('$SETTINGS', 'utf8'));
   const patch = {
-    skills:  ['$REPO/agents/agents', '$REPO/agents/skills'],
-    prompts: ['$REPO/agents/prompts']
+    skills:  ['$REPO/pi/agents/agents', '$REPO/pi/agents/skills'],
+    prompts: ['$REPO/pi/agents/prompts']
   };
   fs.writeFileSync('$SETTINGS', JSON.stringify({ ...current, ...patch }, null, 2));
   console.log('settings.json atualizado.');
@@ -66,7 +66,7 @@ Crie o symlink apontando para a pasta `agents/` do repositório:
 
 ```bash
 # Substitua ~/pi-config pelo caminho onde você clonou o repositório
-ln -s ~/pi-config/agents ~/agents
+ln -s ~/pi-config/pi/agents ~/agents
 ```
 
 ## 6. Instalar o RTK (opcional, recomendado)

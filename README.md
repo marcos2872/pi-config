@@ -1,18 +1,35 @@
 # pi-config
 
-Configuração pessoal do **[pi](https://shittycodingagent.ai/)** — coding agent de terminal com suporte a múltiplos modelos de IA.
+Configuração pessoal para dois coding agents de terminal: **[pi](https://shittycodingagent.ai/)** e **[OpenCode](https://opencode.ai/)**.
 
-## O que tem aqui
+## Estrutura
 
-- **`extensions/`** — extensões TypeScript carregadas globalmente pelo pi: troca de agente, provedor OpenRouter, compressão de tokens via RTK e geração automática de `AGENTS.md`
-- **`agents/agents/`** — agentes especializados: `ask`, `build`, `doc`, `geral`, `plan`, `qa`, `quality`, `test`
-- **`agents/skills/`** — skills reutilizáveis: `diagram`, `excalidraw`, `doc-*`, `git-commit-push`
+```
+pi-config/
+├── pi/                    ← Configuração do pi
+│   ├── extensions/        ← Extensões TypeScript (agent-switcher, RTK, OpenRouter, init-agents)
+│   ├── agents/agents/     ← Agentes: ask, build, doc, geral, plan, qa, quality, test
+│   ├── agents/skills/     ← Skills: diagram, excalidraw, doc-*, git-commit-push
+│   └── docs/              ← Documentação do pi
+└── opencode/              ← Configuração do OpenCode
+    ├── agents/            ← Agentes: ask, doc, geral, qa, quality, test
+    └── skills/            ← Skills: code-conventions, doc-*, excalidraw, git-commit-push
+```
+
+## pi
 
 Troque de agente com **Alt+A** ou **`/agent`**. Gere o `AGENTS.md` de qualquer projeto com **`/init`**.
 
-## Configuração
+→ [Configuração](pi/docs/configure.md) · [Agentes e Skills](pi/docs/agents.md) · [Extensões](pi/docs/extensions.md)
 
-→ [docs/configure.md](docs/configure.md)
+## OpenCode
+
+Agentes e skills ficam em `opencode/` e são ativados via symlink em `~/.config/opencode/`.
+
+```bash
+ln -s ~/Projetos/pi-config/opencode/agents ~/.config/opencode/agents
+ln -s ~/Projetos/pi-config/opencode/skills ~/.config/opencode/skills
+```
 
 ## Preview
 
